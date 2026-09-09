@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#63b33a" />
+  <title>CampusX · GCIT Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="#dashboard" aria-label="CampusX dashboard">
+        <img src="gcit-logo.png" alt="GCIT logo" />
+        <div><strong>CampusX</strong><span>GCIT Administration</span></div>
+      </a>
+      <nav id="mainNav" aria-label="Main navigation">
+        <button class="nav-item active" data-page="dashboard"><span>⌂</span> Overview</button>
+        <button class="nav-item" data-page="leave"><span>▤</span> Leave requests <b id="pendingBadge">0</b></button>
+        <button class="nav-item" data-page="movement"><span>↔</span> Live movement</button>
+        <button class="nav-item" data-page="gate"><span>▣</span> Gate verification <b id="gateBadge">0</b></button>
+        <button class="nav-item" data-page="visitors"><span>♙</span> Visitors</button>
+        <button class="nav-item" data-page="students"><span>◎</span> Students</button>
+        <button class="nav-item" data-page="reports"><span>◫</span> Reports & audit</button>
+        <button class="nav-item" data-page="settings"><span>⚙</span> Settings</button>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="avatar">KW</div><div><strong>Karma Wangdi</strong><span>System Administrator</span></div>
+        <button id="logoutBtn" aria-label="Log out">↪</button>
+      </div>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <button class="icon-btn mobile-only" id="menuBtn" aria-label="Open menu">☰</button>
+        <div><p id="eyebrow">Wednesday, 09 September</p><h1 id="pageTitle">Good morning, Karma</h1></div>
+        <div class="top-actions">
+          <label class="global-search"><span>⌕</span><input id="globalSearch" placeholder="Search student, ID or visitor…" /></label>
+          <button class="icon-btn" id="notificationBtn" aria-label="Notifications">♢<i></i></button>
+          <div class="avatar">KW</div>
+        </div>
+      </header>
+      <section id="content" class="content"></section>
+    </main>
+  </div>
+  <div id="modalRoot"></div>
+  <div id="toastRoot" aria-live="polite"></div>
+  <script src="admin.js"></script>
+</body>
+</html>
