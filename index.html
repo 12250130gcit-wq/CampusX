@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GCIT Smart Leave — Access Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --forest-dark:#1F3116;
+    --forest:#3B5C28;
+    --forest-mid:#4C6F35;
+    --leaf-deep:#5E8E2E;
+    --clay:#E2823D;
+    --clay-deep:#C96A2C;
+    --mint:#EAF4E1;
+    --cream:#F6F4EE;
+    --paper:#FFFFFF;
+    --ink:#22301A;
+    --ink-soft:#5B6653;
+    --line:#E2E3DA;
+    --error:#B3452F;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    min-height:100vh;
+    font-family:'Inter',sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(900px 500px at 12% -8%, rgba(94,142,46,0.10), transparent 60%),
+      radial-gradient(700px 460px at 105% 108%, rgba(226,130,61,0.10), transparent 60%),
+      var(--cream);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:28px 16px;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .wrap{width:100%; max-width:440px;}
+
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    justify-content:center;
+    margin-bottom:26px;
+  }
+  .crest{
+    width:42px;height:42px;border-radius:12px;
+    background:linear-gradient(155deg,var(--clay) 0%, var(--clay-deep) 100%);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 6px 14px rgba(201,106,44,0.3);
+    flex-shrink:0;
+  }
+  .crest svg{width:22px;height:22px;}
+  .brand .name strong{
+    display:block;
+    font-family:'Fraunces',serif;
+    font-size:17px;
+    font-weight:600;
+    color:var(--forest-dark);
+    line-height:1.2;
+  }
+  .brand .name span{
+    display:block;
+    font-size:11.5px;
+    color:var(--ink-soft);
+    margin-top:1px;
+  }
+
+  .card{
+    background:var(--paper);
+    border-radius:20px;
+    padding:32px 28px 30px;
+    box-shadow:0 1px 2px rgba(31,49,22,0.04), 0 18px 40px -14px rgba(31,49,22,0.18);
+    border:1px solid var(--line);
+  }
+
+  .role-note{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:var(--mint);
+    color:var(--forest-dark);
+    font-size:12.5px;
+    font-weight:500;
+    padding:9px 13px;
+    border-radius:10px;
+    margin-bottom:22px;
+  }
+  .role-note svg{width:15px;height:15px; flex-shrink:0;}
+
+  .heading h2{
+    font-family:'Fraunces',serif;
+    font-size:23px;
+    font-weight:600;
+    margin:0 0 5px;
+  }
+  .heading p{
+    margin:0 0 22px;
+    font-size:13.5px;
+    color:var(--ink-soft);
+  }
+
+  .tabs{
+    position:relative;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    background:var(--mint);
+    border-radius:999px;
+    padding:4px;
+    margin-bottom:24px;
+  }
+  .tabs button{
+    position:relative;
+    z-index:2;
+    border:none;
+    background:transparent;
+    padding:10px 0;
+    font-family:'Inter',sans-serif;
+    font-size:13.5px;
+    font-weight:600;
+    color:var(--ink-soft);
+    cursor:pointer;
+    border-radius:999px;
+    transition:color .25s ease;
+  }
+  .tabs button.active{color:#fff;}
+  .tab-indicator{
+    position:absolute;
+    top:4px; left:4px;
+    width:calc(50% - 4px);
+    height:calc(100% - 8px);
+    background:var(--forest);
+    border-radius:999px;
+    transition:transform .32s cubic-bezier(.65,0,.35,1);
+    z-index:1;
+  }
+  .tabs.reg-active .tab-indicator{transform:translateX(100%);}
+
+  form{display:none;}
+  form.active{display:block; animation:fade-in .35s ease;}
+  @keyframes fade-in{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+  .field{margin-bottom:16px;}
+  .field label{
+    display:block;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--ink);
+    margin-bottom:6px;
+  }
+  .input-wrap{position:relative;}
+  .field input,.field select{
+    width:100%;
+    padding:11px 13px;
+    font-size:14px;
+    font-family:'Inter',sans-serif;
+    color:var(--ink);
+    background:var(--paper);
+    border:1.5px solid var(--line);
+    border-radius:10px;
+    outline:none;
+    transition:border-color .2s ease, box-shadow .2s ease;
+    appearance:none;
+  }
+  .field select{
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8'><path d='M1 1l5 5 5-5' stroke='%235B6653' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-repeat:no-repeat;
+    background-position:right 13px center;
+    padding-right:34px;
+    color:var(--ink);
+  }
+  .field select:invalid{color:var(--ink-soft);}
+  .field input:focus,.field select:focus{
+    border-color:var(--leaf-deep);
+    box-shadow:0 0 0 3px rgba(94,142,46,0.16);
+  }
+  .field.has-error input,.field.has-error select{
+    border-color:var(--error);
+    box-shadow:0 0 0 3px rgba(179,69,47,0.12);
+  }
+  .error-msg{
+    display:none;
+    font-size:12px;
+    color:var(--error);
+    margin-top:5px;
+  }
+  .field.has-error .error-msg{display:block;}
+
+  .pw-toggle{
+    position:absolute;
+    right:11px; top:50%;
+    transform:translateY(-50%);
+    background:none;
+    border:none;
+    cursor:pointer;
+    padding:3px;
+    color:var(--ink-soft);
+    display:flex;
+  }
+  .pw-toggle svg{width:17px;height:17px;}
+
+  .submit-btn{
+    width:100%;
+    padding:12.5px 0;
+    border:none;
+    border-radius:999px;
+    background:var(--leaf-deep);
+    color:#fff;
+    font-family:'Inter',sans-serif;
+    font-size:14.5px;
+    font-weight:700;
+    cursor:pointer;
+    position:relative;
+    margin-top:6px;
+    transition:background .2s ease, transform .15s ease, box-shadow .2s ease;
+    box-shadow:0 8px 18px rgba(94,142,46,0.26);
+  }
+  .submit-btn:hover{background:var(--forest-mid); transform:translateY(-1px);}
+  .submit-btn:active{transform:translateY(0);}
+  .submit-btn:disabled{cursor:default;}
+  .submit-btn.loading{color:transparent;}
+  .submit-btn .spinner{
+    display:none;
+    position:absolute; left:50%; top:50%;
+    width:17px; height:17px;
+    margin:-8.5px 0 0 -8.5px;
+    border:2.5px solid rgba(255,255,255,0.4);
+    border-top-color:#fff;
+    border-radius:50%;
+    animation:spin .7s linear infinite;
+  }
+  .submit-btn.loading .spinner{display:block;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .switch-line{
+    text-align:center;
+    font-size:13px;
+    color:var(--ink-soft);
+    margin-top:18px;
+  }
+  .switch-line button{
+    background:none; border:none; padding:0;
+    color:var(--clay-deep); font-weight:700;
+    cursor:pointer; font-size:13px; font-family:'Inter',sans-serif;
+  }
+
+  .toast{
+    position:fixed;
+    bottom:22px; left:50%;
+    transform:translate(-50%,20px);
+    background:var(--forest-dark);
+    color:#F3F5EE;
+    padding:12px 20px;
+    border-radius:999px;
+    font-size:13px;
+    font-weight:500;
+    box-shadow:0 12px 30px rgba(0,0,0,0.25);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .3s ease, transform .3s ease;
+    display:flex; align-items:center; gap:9px;
+    max-width:calc(100% - 32px);
+    text-align:center;
+  }
+  .toast.show{opacity:1; transform:translate(-50%,0); pointer-events:auto;}
+  .toast .dot{width:7px;height:7px;border-radius:50%;background:var(--leaf-deep);flex-shrink:0;}
+
+  @media (max-width:400px){
+    .card{padding:26px 20px 24px; border-radius:16px;}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="brand">
+    <div class="crest">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 2 3 7l9 5 9-5-9-5Z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/><path d="M6 10.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-5.5" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="name">
+      <strong>GCIT Smart Leave</strong>
+      <span>Gyalpozhing College of IT</span>
+    </div>
+  </div>
+
+  <div class="card">
+
+    <div class="role-note">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><path d="M2 20c0-3.3 3-6 7-6s7 2.7 7 6"/><path d="M16 4.5c1.7.3 3 1.9 3 3.5s-1.3 3.2-3 3.5"/><path d="M22 20c0-2.6-1.9-4.8-4.5-5.6"/></svg>
+      One portal for both Students and SSO Admins
+    </div>
+
+    <div class="heading" id="headingBlock">
+      <h2 id="headingTitle">Welcome back</h2>
+      <p id="headingSub">Log in with your Student or Admin ID.</p>
+    </div>
+
+    <div class="tabs" id="tabs">
+      <button type="button" class="active" data-target="login">Log In</button>
+      <button type="button" data-target="register">Register</button>
+      <span class="tab-indicator"></span>
+    </div>
+
+    <!-- LOGIN -->
+    <form id="loginForm" class="active" novalidate>
+      <div class="field" data-field="id">
+        <label for="lg-id">Student ID / Admin ID</label>
+        <input type="text" id="lg-id" placeholder="Enter your ID" autocomplete="username">
+        <p class="error-msg">Enter your Student or Admin ID.</p>
+      </div>
+
+      <div class="field" data-field="pw">
+        <label for="lg-pw">Password</label>
+        <div class="input-wrap">
+          <input type="password" id="lg-pw" placeholder="Enter your password" autocomplete="current-password">
+          <button type="button" class="pw-toggle" data-for="lg-pw" aria-label="Show password">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <p class="error-msg">Password can't be empty.</p>
+      </div>
+
+      <button type="submit" class="submit-btn">
+        <span class="spinner"></span>
+        <span class="label">Log In</span>
+      </button>
+
+      <p class="switch-line">Don't have an account? <button type="button" data-target="register">Register here</button></p>
+    </form>
+
+    <!-- REGISTER -->
+    <form id="registerForm" novalidate>
+      <div class="field" data-field="name">
+        <label for="rg-name">Full Name</label>
+        <input type="text" id="rg-name" placeholder="Your full name" autocomplete="name">
+        <p class="error-msg">Enter your full name.</p>
+      </div>
+
+      <div class="field" data-field="id">
+        <label for="rg-id">Student ID / Admin ID</label>
+        <input type="text" id="rg-id" placeholder="Enter your ID" autocomplete="off">
+        <p class="error-msg">Enter your Student or Admin ID.</p>
+      </div>
+
+      <div class="field" data-field="email">
+        <label for="rg-email">College Email</label>
+        <input type="email" id="rg-email" placeholder="yourname@gcit.edu.bt" autocomplete="email">
+        <p class="error-msg">Enter a valid college email.</p>
+      </div>
+
+      <div class="field" data-field="dept">
+        <label for="rg-dept">Department / Role</label>
+        <select id="rg-dept" required>
+          <option value="" selected disabled>Select Option</option>
+          <option value="department">Department / Program</option>
+          <option value="sso">SSO</option>
+        </select>
+        <p class="error-msg">Select your department or role.</p>
+      </div>
+
+      <div class="field" data-field="pw">
+        <label for="rg-pw">Password</label>
+        <div class="input-wrap">
+          <input type="password" id="rg-pw" placeholder="At least 8 characters" autocomplete="new-password">
+          <button type="button" class="pw-toggle" data-for="rg-pw" aria-label="Show password">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <p class="error-msg">Password must be at least 8 characters.</p>
+      </div>
+
+      <div class="field" data-field="cpw">
+        <label for="rg-cpw">Confirm Password</label>
+        <div class="input-wrap">
+          <input type="password" id="rg-cpw" placeholder="Re-enter your password" autocomplete="new-password">
+          <button type="button" class="pw-toggle" data-for="rg-cpw" aria-label="Show password">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <p class="error-msg">Passwords don't match.</p>
+      </div>
+
+      <button type="submit" class="submit-btn">
+        <span class="spinner"></span>
+        <span class="label">Create Account</span>
+      </button>
+
+      <p class="switch-line">Already have an account? <button type="button" data-target="login">Log in instead</button></p>
+    </form>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"><span class="dot"></span><span id="toastText">Logged in successfully.</span></div>
+
+<script>
+  const tabs = document.getElementById('tabs');
+  const tabBtns = tabs.querySelectorAll('button');
+  const loginForm = document.getElementById('loginForm');
+  const registerForm = document.getElementById('registerForm');
+  const headingTitle = document.getElementById('headingTitle');
+  const headingSub = document.getElementById('headingSub');
+  const toast = document.getElementById('toast');
+  const toastText = document.getElementById('toastText');
+
+  const copy = {
+    login: { title: 'Welcome back', sub: 'Log in with your Student or Admin ID.' },
+    register: { title: 'Create your account', sub: 'Register as a Student or SSO Admin to get started.' }
+  };
+
+  function switchTo(target){
+    tabBtns.forEach(b => b.classList.toggle('active', b.dataset.target === target));
+    tabs.classList.toggle('reg-active', target === 'register');
+    loginForm.classList.toggle('active', target === 'login');
+    registerForm.classList.toggle('active', target === 'register');
+    headingTitle.textContent = copy[target].title;
+    headingSub.textContent = copy[target].sub;
+  }
+
+  document.querySelectorAll('[data-target]').forEach(el => {
+    el.addEventListener('click', () => switchTo(el.dataset.target));
+  });
+
+  document.querySelectorAll('.pw-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const input = document.getElementById(btn.dataset.for);
+      const showing = input.type === 'text';
+      input.type = showing ? 'password' : 'text';
+      btn.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+    });
+  });
+
+  function setError(field, show){
+    field.classList.toggle('has-error', show);
+  }
+
+  function showToast(msg){
+    toastText.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2600);
+  }
+
+  function runSubmit(form, btn, validate, successMsg){
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      if(!validate()) return;
+      btn.classList.add('loading');
+      btn.disabled = true;
+      setTimeout(() => {
+        btn.classList.remove('loading');
+        btn.disabled = false;
+        showToast(successMsg);
+      }, 900);
+    });
+  }
+
+  // ---- Login validation ----
+  const lgId = document.getElementById('lg-id');
+  const lgPw = document.getElementById('lg-pw');
+  const lgIdField = loginForm.querySelector('[data-field="id"]');
+  const lgPwField = loginForm.querySelector('[data-field="pw"]');
+
+  function validateLogin(){
+    const idOk = lgId.value.trim().length > 0;
+    const pwOk = lgPw.value.length > 0;
+    setError(lgIdField, !idOk);
+    setError(lgPwField, !pwOk);
+    return idOk && pwOk;
+  }
+  lgId.addEventListener('input', () => setError(lgIdField, false));
+  lgPw.addEventListener('input', () => setError(lgPwField, false));
+  runSubmit(loginForm, loginForm.querySelector('.submit-btn'), validateLogin, 'Logged in successfully.');
+
+  // ---- Register validation ----
+  const rgName = document.getElementById('rg-name');
+  const rgId = document.getElementById('rg-id');
+  const rgEmail = document.getElementById('rg-email');
+  const rgDept = document.getElementById('rg-dept');
+  const rgPw = document.getElementById('rg-pw');
+  const rgCpw = document.getElementById('rg-cpw');
+
+  const fields = {
+    name: registerForm.querySelector('[data-field="name"]'),
+    id: registerForm.querySelector('[data-field="id"]'),
+    email: registerForm.querySelector('[data-field="email"]'),
+    dept: registerForm.querySelector('[data-field="dept"]'),
+    pw: registerForm.querySelector('[data-field="pw"]'),
+    cpw: registerForm.querySelector('[data-field="cpw"]')
+  };
+
+  function validateRegister(){
+    const nameOk = rgName.value.trim().length > 1;
+    const idOk = rgId.value.trim().length > 0;
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rgEmail.value.trim());
+    const deptOk = rgDept.value !== '';
+    const pwOk = rgPw.value.length >= 8;
+    const cpwOk = pwOk && rgCpw.value === rgPw.value;
+
+    setError(fields.name, !nameOk);
+    setError(fields.id, !idOk);
+    setError(fields.email, !emailOk);
+    setError(fields.dept, !deptOk);
+    setError(fields.pw, !pwOk);
+    setError(fields.cpw, !cpwOk);
+
+    return nameOk && idOk && emailOk && deptOk && pwOk && cpwOk;
+  }
+
+  [rgName, rgId, rgEmail, rgDept, rgPw].forEach(el => {
+    const key = Object.keys(fields).find(k => fields[k].contains(el));
+    el.addEventListener('input', () => setError(fields[key], false));
+    el.addEventListener('change', () => setError(fields[key], false));
+  });
+  rgCpw.addEventListener('input', () => setError(fields.cpw, false));
+
+  runSubmit(registerForm, registerForm.querySelector('.submit-btn'), validateRegister, 'Account created successfully.');
+</script>
+
+</body>
+</html>
