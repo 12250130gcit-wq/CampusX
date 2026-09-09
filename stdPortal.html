@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CampusX — GCIT Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --green-900:#314C1C;
+    --green-800:#4C762B;
+    --green-700:#76B543;
+    --green-600:#7FC348;
+    --green-100:#EEF6E8;
+    --orange-600:#F58322;
+    --orange-500:#F69949;
+    --orange-100:#FDF0E4;
+    --white:#FFFFFF;
+    --cream:#FAF8F4;
+    --ink:#182821;
+    --ink-muted:#6E7A73;
+    --line:#E7E2D8;
+    --radius-lg:26px;
+    --radius-md:16px;
+    --radius-sm:10px;
+    --shadow-card: 0 1px 2px rgba(18,61,43,0.06), 0 12px 28px -14px rgba(18,61,43,0.28);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Inter',sans-serif;
+    background:
+      radial-gradient(circle at 1px 1px, #E4DFD3 1px, transparent 1px) 0 0/22px 22px,
+      var(--cream);
+    color:var(--ink);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    padding:40px 16px;
+  }
+  h1,h2,h3,h4,button,.nav-label,.brand-name{font-family:'Manrope',sans-serif;}
+
+  .app{
+    width:100%;
+    max-width:400px;
+    background:var(--white);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-card);
+    overflow:hidden;
+    position:relative;
+    border:1px solid var(--line);
+  }
+
+  /* ---------- DETAIL SCREEN HEADER ---------- */
+  .detail-header{
+    display:none;
+    align-items:center;justify-content:space-between;
+    padding:16px 18px;border-bottom:1px solid var(--line);
+    background:var(--white);
+  }
+  .detail-header.active{display:flex;}
+  .back-btn{
+    background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;
+    font-family:'Manrope',sans-serif;font-weight:700;font-size:14px;color:var(--ink);padding:6px 4px;
+  }
+  .back-btn svg{width:19px;height:19px;color:var(--ink);}
+  .detail-header .avatar-ring{width:30px;height:30px;font-size:12px;}
+
+  /* ---------- HEADER ---------- */
+  .topbar{
+    background:linear-gradient(165deg,var(--green-900),var(--green-800));
+    color:var(--white);
+    padding:18px 20px 22px;
+    position:relative;
+  }
+  .topbar-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand-mark{
+    width:34px;height:34px;border-radius:9px;
+    background:var(--orange-600);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:15px;color:var(--white);
+    flex-shrink:0;
+  }
+  .brand-text .brand-name{font-size:15px;font-weight:800;line-height:1.1;}
+  .brand-text .brand-sub{font-size:10.5px;letter-spacing:.04em;color:#CFE3D6;margin-top:1px;}
+
+  .topbar-actions{display:flex;align-items:center;gap:12px;}
+  .icon-btn{
+    width:34px;height:34px;border-radius:50%;
+    background:rgba(255,255,255,0.12);
+    border:none;display:flex;align-items:center;justify-content:center;
+    cursor:pointer;color:var(--white);position:relative;
+    transition:background .15s ease;
+  }
+  .icon-btn:hover{background:rgba(255,255,255,0.22);}
+  .icon-btn svg{width:17px;height:17px;}
+  .dot-badge{
+    position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;
+    background:var(--orange-500);border:1.5px solid var(--green-900);
+  }
+  .avatar-ring{
+    width:34px;height:34px;border-radius:50%;
+    background:var(--orange-100);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;color:var(--orange-600);font-size:13px;
+    border:2px solid var(--orange-500);cursor:pointer;
+  }
+
+  .hello-block{margin-top:20px;display:flex;justify-content:space-between;align-items:flex-start;}
+  .hello-block h1{margin:0;font-size:21px;font-weight:800;}
+  .hello-block .sid{font-size:12px;color:#CFE3D6;margin-top:3px;}
+  .term-pill{
+    background:rgba(255,255,255,0.14);
+    padding:5px 10px;border-radius:20px;font-size:11px;font-weight:700;
+    letter-spacing:.03em;color:var(--white);white-space:nowrap;
+  }
+
+  /* notification dropdown */
+  .notif-panel{
+    position:absolute;top:56px;right:20px;width:250px;
+    background:var(--white);color:var(--ink);
+    border-radius:var(--radius-md);box-shadow:0 14px 34px -10px rgba(18,40,33,0.35);
+    padding:8px;z-index:40;display:none;border:1px solid var(--line);
+  }
+  .notif-panel.open{display:block;}
+  .notif-item{padding:10px 10px;border-radius:10px;font-size:12.5px;line-height:1.4;}
+  .notif-item:hover{background:var(--green-100);}
+  .notif-item b{display:block;font-size:12.5px;margin-bottom:2px;}
+  .notif-item span{color:var(--ink-muted);font-size:11.5px;}
+
+  /* ---------- SCREEN BODY ---------- */
+  .screen{display:none;padding:18px 20px 100px;}
+  .screen.active{display:block;animation:fadein .25s ease;}
+  @keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  .status-card{
+    background:var(--green-100);
+    border-radius:var(--radius-md);
+    padding:16px;margin-top:16px;
+  }
+  .status-row{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--green-700);font-size:13.5px;}
+  .pulse{width:8px;height:8px;border-radius:50%;background:var(--green-600);position:relative;}
+  .pulse::after{
+    content:'';position:absolute;inset:0;border-radius:50%;background:var(--green-600);
+    animation:pulse 1.8s infinite;
+  }
+  @keyframes pulse{0%{transform:scale(1);opacity:.6;}100%{transform:scale(2.6);opacity:0;}}
+  .status-sub{font-size:13px;color:var(--ink);margin-top:6px;font-weight:600;}
+  .status-loc{font-size:12px;color:var(--ink-muted);margin-top:2px;}
+
+  .btn{
+    border:none;cursor:pointer;font-family:'Manrope',sans-serif;font-weight:700;
+    border-radius:var(--radius-sm);transition:transform .12s ease, filter .12s ease;
+  }
+  .btn:active{transform:scale(0.98);}
+  .btn-primary{
+    background:var(--green-700);color:var(--white);
+    width:100%;padding:13px;font-size:14.5px;margin-top:14px;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+  }
+  .btn-primary:hover{filter:brightness(1.08);}
+  .btn-outline{
+    background:transparent;border:1.5px solid var(--line);color:var(--ink);
+    padding:11px;font-size:13.5px;width:100%;
+  }
+  .btn-outline:hover{border-color:var(--green-600);color:var(--green-700);}
+  .btn-orange{background:var(--orange-600);color:var(--white);}
+  .btn-orange:hover{filter:brightness(1.06);}
+
+  .section-title{
+    font-size:13.5px;font-weight:800;color:var(--green-900);
+    margin:22px 0 10px;display:flex;justify-content:space-between;align-items:center;
+  }
+  .see-all{font-size:12px;color:var(--green-700);font-weight:700;cursor:pointer;text-decoration:none;}
+
+  /* empty state */
+  .empty-box{
+    border:1.5px dashed var(--line);border-radius:var(--radius-md);
+    padding:24px 10px;text-align:center;color:var(--ink-muted);font-size:12.5px;
+  }
+  .empty-box svg{width:26px;height:26px;color:var(--ink-muted);margin-bottom:8px;opacity:.7;}
+
+  /* upcoming leave ticket */
+  .ticket{
+    background:var(--white);border:1px solid var(--line);border-radius:var(--radius-md);
+    padding:14px;position:relative;box-shadow:0 6px 18px -10px rgba(18,61,43,0.18);
+  }
+  .ticket-top{display:flex;justify-content:space-between;align-items:flex-start;}
+  .ticket-dest{font-size:14px;font-weight:800;color:var(--ink);}
+  .ticket-date{font-size:11.5px;color:var(--ink-muted);margin-top:2px;}
+  .status-badge{
+    font-size:10.5px;font-weight:800;padding:4px 9px;border-radius:20px;letter-spacing:.02em;
+    white-space:nowrap;
+  }
+  .badge-pending{background:var(--orange-100);color:var(--orange-600);}
+  .badge-approved{background:var(--green-100);color:var(--green-700);}
+  .badge-completed{background:#EDEBE5;color:var(--ink-muted);}
+  .ticket-divider{
+    border-top:1.5px dashed var(--line);margin:12px 0;position:relative;
+  }
+  .ticket-divider::before,.ticket-divider::after{
+    content:'';position:absolute;top:-7px;width:14px;height:14px;border-radius:50%;background:var(--cream);
+  }
+  .ticket-divider::before{left:-26px;}
+  .ticket-divider::after{right:-26px;}
+  .ticket-meta{display:flex;justify-content:space-between;font-size:11.5px;color:var(--ink-muted);}
+  .ticket-meta b{color:var(--ink);font-weight:700;}
+  .ticket-cancel{
+    margin-top:12px;width:100%;background:transparent;border:1.5px solid #F1CFCF;color:#C0392B;
+    font-size:12px;padding:9px;border-radius:var(--radius-sm);font-weight:700;
+  }
+  .ticket-cancel:hover{background:#FBEDED;}
+
+  /* activity list */
+  .activity-item{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:12px 0;border-bottom:1px solid var(--line);
+  }
+  .activity-item:last-child{border-bottom:none;}
+  .activity-left b{font-size:13px;font-weight:700;display:block;}
+  .activity-left span{font-size:11.5px;color:var(--ink-muted);}
+
+  /* ---------- BOTTOM NAV ---------- */
+  .bottom-nav{
+    position:absolute;left:0;right:0;bottom:0;
+    background:var(--white);border-top:1px solid var(--line);
+    display:flex;justify-content:space-around;padding:9px 6px 12px;
+  }
+  .nav-btn{
+    background:none;border:none;cursor:pointer;display:flex;flex-direction:column;
+    align-items:center;gap:3px;color:var(--ink-muted);font-size:10.5px;font-weight:700;
+    padding:4px 10px;border-radius:10px;transition:color .15s ease;
+  }
+  .nav-btn svg{width:20px;height:20px;}
+  .nav-btn.active{color:var(--green-700);}
+  .nav-btn.active svg{color:var(--green-700);}
+
+  /* ---------- FORM (Apply Leave) ---------- */
+  .form-header{margin-top:4px;}
+  .gate-pill{
+    display:inline-flex;align-items:center;gap:5px;background:var(--orange-100);color:var(--orange-600);
+    font-size:10.5px;font-weight:800;padding:5px 10px;border-radius:20px;letter-spacing:.02em;
+  }
+  .form-header h2{font-size:19px;margin:10px 0 2px;color:var(--green-900);}
+  .form-header p{font-size:12.5px;color:var(--ink-muted);margin:0 0 14px;}
+
+  .field{margin-bottom:14px;}
+  .field label{font-size:12px;font-weight:700;color:var(--ink);display:block;margin-bottom:6px;}
+  .field-hint{font-size:10.5px;color:var(--ink-muted);font-weight:500;float:right;}
+  .input, select, textarea{
+    width:100%;border:1.5px solid var(--line);border-radius:var(--radius-sm);
+    padding:11px 12px;font-family:'Inter',sans-serif;font-size:13.5px;color:var(--ink);
+    background:var(--cream);outline:none;transition:border-color .15s ease, background .15s ease;
+  }
+  .input:focus, select:focus, textarea:focus{border-color:var(--green-600);background:var(--white);}
+  textarea{resize:none;min-height:70px;}
+  .row-2{display:flex;gap:10px;}
+  .row-2 .field{flex:1;}
+
+  .upload-box{
+    border:1.5px dashed var(--line);border-radius:var(--radius-sm);
+    padding:12px;display:flex;align-items:center;gap:10px;background:var(--cream);cursor:pointer;
+  }
+  .upload-box:hover{border-color:var(--green-600);}
+  .upload-icon{
+    width:32px;height:32px;border-radius:8px;background:var(--green-100);color:var(--green-700);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .upload-icon svg{width:16px;height:16px;}
+  .upload-text b{font-size:12.5px;display:block;}
+  .upload-text span{font-size:11px;color:var(--ink-muted);}
+  .upload-browse{margin-left:auto;font-size:11.5px;color:var(--green-700);font-weight:700;}
+  #fileInput{display:none;}
+  .file-chip{
+    margin-top:8px;font-size:11.5px;background:var(--green-100);color:var(--green-700);
+    padding:6px 10px;border-radius:8px;display:none;align-items:center;justify-content:space-between;font-weight:600;
+  }
+  .file-chip.show{display:flex;}
+  .file-chip button{background:none;border:none;color:var(--green-700);cursor:pointer;font-weight:800;font-size:13px;}
+
+  .duration-strip{
+    display:flex;align-items:center;justify-content:space-between;
+    background:var(--green-100);color:var(--green-700);border-radius:var(--radius-sm);
+    padding:11px 13px;font-size:12px;font-weight:700;margin:16px 0 6px;
+  }
+  .duration-strip .tag{
+    background:var(--white);padding:3px 9px;border-radius:20px;font-size:10px;letter-spacing:.02em;
+  }
+  .err{color:#C0392B;font-size:11px;margin-top:5px;font-weight:600;display:none;}
+  .field.invalid .input, .field.invalid select, .field.invalid textarea{border-color:#E39A9A;background:#FDF4F4;}
+  .field.invalid .err{display:block;}
+
+  /* filter chips (My Leaves) */
+  .chip-row{display:flex;gap:8px;margin:16px 0 4px;overflow-x:auto;padding-bottom:2px;}
+  .chip{
+    flex-shrink:0;padding:7px 14px;border-radius:20px;font-size:11.5px;font-weight:700;
+    background:var(--cream);border:1px solid var(--line);color:var(--ink-muted);cursor:pointer;
+  }
+  .chip.active{background:var(--green-700);color:var(--white);border-color:var(--green-700);}
+
+  /* profile */
+  .profile-head{display:flex;flex-direction:column;align-items:center;text-align:center;margin-top:8px;}
+  .profile-avatar{
+    width:66px;height:66px;border-radius:50%;background:var(--orange-100);color:var(--orange-600);
+    display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;
+    border:3px solid var(--orange-500);
+  }
+  .profile-head h3{margin:12px 0 2px;font-size:16px;}
+  .profile-head span{font-size:12px;color:var(--ink-muted);}
+  .info-list{margin-top:20px;border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;}
+  .info-row{
+    display:flex;justify-content:space-between;padding:12px 14px;font-size:12.5px;
+    border-bottom:1px solid var(--line);
+  }
+  .info-row:last-child{border-bottom:none;}
+  .info-row span:first-child{color:var(--ink-muted);}
+  .info-row span:last-child{font-weight:700;}
+
+  /* toast */
+  .toast{
+    position:absolute;left:20px;right:20px;bottom:78px;
+    background:var(--green-900);color:var(--white);padding:12px 15px;border-radius:var(--radius-sm);
+    font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:9px;
+    box-shadow:0 12px 26px -8px rgba(18,40,33,0.5);
+    transform:translateY(14px);opacity:0;pointer-events:none;transition:all .28s ease;z-index:50;
+  }
+  .toast.show{transform:translateY(0);opacity:1;}
+  .toast svg{width:16px;height:16px;color:var(--orange-500);flex-shrink:0;}
+
+  /* ---------- LEAVE DETAIL SCREEN ---------- */
+  #view-detail{padding-top:16px;padding-bottom:26px;}
+  .pass-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .official-pill{
+    display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:800;
+    color:var(--green-800);letter-spacing:.03em;
+  }
+  .official-pill .sq{width:7px;height:7px;border-radius:2px;background:var(--green-700);}
+  .status-pill{
+    display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:800;
+    padding:4px 10px;border-radius:20px;
+  }
+  .status-pill.approved{background:var(--green-100);color:var(--green-800);}
+  .status-pill.pending{background:var(--orange-100);color:var(--orange-600);}
+  .status-pill.completed{background:#EDEBE5;color:var(--ink-muted);}
+
+  .detail-title{font-size:22px;font-weight:800;color:var(--green-900);margin:2px 0 4px;}
+  .detail-date{font-size:12.5px;color:var(--ink-muted);display:flex;align-items:center;gap:6px;margin-bottom:16px;}
+  .detail-date svg{width:13px;height:13px;}
+
+  .authority-card{
+    display:flex;align-items:center;gap:12px;background:var(--cream);border:1px solid var(--line);
+    border-radius:var(--radius-md);padding:12px 14px;margin-bottom:18px;
+  }
+  .authority-icon{
+    width:36px;height:36px;border-radius:10px;background:var(--green-100);color:var(--green-800);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .authority-icon svg{width:17px;height:17px;}
+  .authority-text .lbl{font-size:9.5px;font-weight:800;letter-spacing:.05em;color:var(--ink-muted);}
+  .authority-text .name{font-size:13px;font-weight:700;margin-top:2px;}
+  .authority-text .sub{font-size:11px;color:var(--ink-muted);margin-top:1px;}
+
+  .detail-section-title{
+    display:flex;justify-content:space-between;align-items:center;
+    font-size:12.5px;font-weight:800;color:var(--green-900);margin:20px 0 10px;
+  }
+  .duration-chip{font-size:10.5px;font-weight:700;color:var(--green-800);background:var(--green-100);padding:3px 9px;border-radius:20px;}
+
+  .schedule-grid{display:flex;gap:10px;}
+  .schedule-box{
+    flex:1;background:var(--cream);border:1px solid var(--line);border-radius:var(--radius-md);padding:12px 13px;
+  }
+  .schedule-box .sb-lbl{display:flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;color:var(--ink-muted);}
+  .schedule-box .sb-lbl svg{width:12px;height:12px;}
+  .schedule-box .sb-time{font-size:16px;font-weight:800;color:var(--ink);margin:5px 0 2px;}
+  .schedule-box .sb-sub{font-size:10.5px;color:var(--ink-muted);}
+
+  .purpose-box{
+    background:var(--cream);border:1px solid var(--line);border-radius:var(--radius-md);
+    padding:13px 14px;font-size:12.5px;line-height:1.55;color:var(--ink);
+  }
+  .purpose-box .lbl{font-size:10.5px;font-weight:800;color:var(--ink-muted);letter-spacing:.03em;margin-bottom:5px;}
+
+  .location-banner{
+    margin-top:20px;border-radius:var(--radius-md);overflow:hidden;position:relative;height:110px;
+    background:
+      linear-gradient(rgba(18,40,25,.15), rgba(18,40,25,.65)),
+      repeating-linear-gradient(120deg, var(--green-700) 0 18px, var(--green-800) 18px 36px);
+  }
+  .location-banner-tag{
+    position:absolute;top:10px;left:12px;font-size:9px;font-weight:800;letter-spacing:.06em;
+    color:rgba(255,255,255,0.85);
+  }
+  .location-banner-name{
+    position:absolute;bottom:10px;left:12px;color:var(--white);font-weight:800;font-size:13px;
+    display:flex;align-items:center;gap:5px;
+  }
+  .location-banner-name svg{width:13px;height:13px;color:var(--orange-500);}
+
+  .log-list{margin-top:4px;}
+  .log-item{display:flex;gap:12px;position:relative;padding-bottom:20px;}
+  .log-item:last-child{padding-bottom:0;}
+  .log-item::before{
+    content:'';position:absolute;left:9px;top:20px;bottom:0;width:1.5px;background:var(--line);
+  }
+  .log-item:last-child::before{display:none;}
+  .log-dot{
+    width:19px;height:19px;border-radius:50%;flex-shrink:0;z-index:1;
+    display:flex;align-items:center;justify-content:center;margin-top:1px;
+  }
+  .log-dot svg{width:11px;height:11px;}
+  .log-dot.done{background:var(--green-700);color:var(--white);}
+  .log-dot.active{background:var(--orange-100);border:2px solid var(--orange-600);}
+  .log-dot.active .inner{width:6px;height:6px;border-radius:50%;background:var(--orange-600);}
+  .log-dot.pending{background:var(--cream);border:2px solid var(--line);}
+  .log-body{flex:1;}
+  .log-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
+  .log-label{font-size:12.5px;font-weight:700;color:var(--ink);}
+  .log-item.pending .log-label,.log-item.pending .log-desc{color:var(--ink-muted);}
+  .log-status{font-size:10px;font-weight:800;letter-spacing:.03em;flex-shrink:0;}
+  .log-status.ready{color:var(--orange-600);}
+  .log-status.pend{color:var(--ink-muted);}
+  .log-desc{font-size:11.5px;color:var(--ink-muted);margin-top:2px;line-height:1.4;}
+
+  .meta-accordion{
+    margin-top:20px;border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;
+  }
+  .meta-head{
+    display:flex;align-items:center;justify-content:space-between;padding:13px 14px;cursor:pointer;
+    font-size:12px;font-weight:700;color:var(--ink);
+  }
+  .meta-head svg{width:15px;height:15px;transition:transform .2s ease;color:var(--ink-muted);}
+  .meta-head.open svg{transform:rotate(180deg);}
+  .meta-body{max-height:0;overflow:hidden;transition:max-height .25s ease;}
+  .meta-body.open{max-height:220px;}
+  .meta-row{display:flex;justify-content:space-between;padding:9px 14px;font-size:11.5px;border-top:1px solid var(--line);}
+  .meta-row span:first-child{color:var(--ink-muted);}
+  .meta-row span:last-child{font-weight:700;}
+
+  .info-val-input{
+    border:1.5px solid var(--green-600);background:var(--white);border-radius:7px;
+    padding:5px 9px;font-size:12.5px;font-weight:700;text-align:right;width:150px;
+    font-family:'Inter',sans-serif;color:var(--ink);outline:none;
+  }
+  .avatar-photo-wrap{position:relative;width:66px;margin:0 auto;}
+  .avatar-edit-badge{
+    position:absolute;bottom:-2px;right:-4px;width:26px;height:26px;border-radius:50%;
+    background:var(--orange-600);color:var(--white);border:2.5px solid var(--white);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;
+    box-shadow:0 2px 6px rgba(0,0,0,0.18);
+  }
+  .avatar-edit-badge svg{width:12px;height:12px;}
+  .avatar-edit-badge:hover{filter:brightness(1.08);}
+  #avatarFileInput{display:none;}
+
+  .field-hint-note{font-size:10.5px;color:var(--ink-muted);margin-top:10px;line-height:1.45;}
+
+  .qr-btn{
+    width:100%;margin-top:22px;background:var(--green-900);color:var(--white);
+    padding:14px;border-radius:var(--radius-sm);font-size:13.5px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;gap:8px;border:none;cursor:pointer;
+  }
+  .qr-btn:hover{filter:brightness(1.15);}
+  .qr-btn svg{width:16px;height:16px;}
+
+  .clickable-ticket{cursor:pointer;}
+  .clickable-ticket:hover{border-color:var(--green-600);}
+  .clickable-activity{cursor:pointer;}
+  .clickable-activity:hover .activity-left b{color:var(--green-800);}
+
+  @media (max-width:420px){
+    body{padding:0;align-items:stretch;}
+    .app{max-width:100%;min-height:100vh;border-radius:0;border:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ===== DETAIL HEADER (shown only on Leave Details screen) ===== -->
+  <div class="detail-header" id="detailHeader">
+    <button class="back-btn" id="detailBack">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      Leave Details
+    </button>
+    <div class="avatar-ring" id="detailAvatar">K</div>
+  </div>
+
+  <!-- ===== HEADER (shared) ===== -->
+  <div class="topbar" id="mainTopbar">
+    <div class="topbar-row">
+      <div class="brand">
+        <div class="brand-mark">Cx</div>
+        <div class="brand-text">
+          <div class="brand-name">CampusX</div>
+          <div class="brand-sub">GCIT · PORTAL</div>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button class="icon-btn" id="bellBtn" title="Notifications">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="dot-badge"></span>
+        </button>
+        <div class="avatar-ring" id="avatarBtn">K</div>
+      </div>
+    </div>
+
+    <div class="hello-block">
+      <div>
+        <h1>Hello, Karma</h1>
+        <div class="sid">Student ID 12250001</div>
+      </div>
+      <div class="term-pill">FALL 2026</div>
+    </div>
+
+    <div class="notif-panel" id="notifPanel">
+      <div class="notif-item"><b>Leave approved ✅</b><span>Your Gyalpozhing Market request was approved.</span></div>
+      <div class="notif-item"><b>Gate pass reminder</b><span>Show your QR pass at the Main Quad gate.</span></div>
+      <div class="notif-item"><b>Curfew notice</b><span>Weekday gate closes at 9:30 PM.</span></div>
+    </div>
+  </div>
+
+  <!-- ===== HOME SCREEN ===== -->
+  <div class="screen active" id="view-home">
+
+    <div class="status-card" id="statusCard">
+      <div class="status-row"><span class="pulse"></span> <span id="statusLabel">ON CAMPUS</span></div>
+      <div class="status-sub" id="statusSub">No active leave today.</div>
+      <div class="status-loc">GCIT Main Residential Quad · Gate passes clear</div>
+      <button class="btn btn-primary" id="applyBtnHome">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Apply for Leave
+      </button>
+    </div>
+
+    <div class="section-title">Upcoming / Current Leave</div>
+    <div id="upcomingBox">
+      <div class="empty-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
+        <div>No upcoming leave.</div>
+      </div>
+    </div>
+
+    <div class="section-title">Recent Activity <a class="see-all" id="viewAllLink">View All →</a></div>
+    <div id="activityList"></div>
+
+  </div>
+
+  <!-- ===== APPLY LEAVE SCREEN ===== -->
+  <div class="screen" id="view-apply">
+    <div class="form-header">
+      <span class="gate-pill">🎫 GCIT GATE PASS</span>
+      <h2>Apply for Leave</h2>
+      <p>Fill in the essential details for your leave request.</p>
+    </div>
+
+    <form id="leaveForm" novalidate>
+      <div class="field">
+        <label>Date</label>
+        <input type="date" class="input" id="fDate" required>
+        <div class="err">Please choose a date.</div>
+      </div>
+
+      <div class="row-2">
+        <div class="field">
+          <label>Exit Time</label>
+          <input type="time" class="input" id="fExit" value="17:00" required>
+        </div>
+        <div class="field">
+          <label>Expected Return</label>
+          <input type="time" class="input" id="fReturn" value="20:00" required>
+          <div class="err">Return must be after exit time.</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Destination</label>
+        <select id="fDest" required>
+          <option value="">Select destination…</option>
+          <option>Gyalpozhing Market</option>
+          <option>Thimphu Town</option>
+          <option>Library Research (off-campus)</option>
+          <option>Family Visit</option>
+          <option>Medical Appointment</option>
+          <option>Other</option>
+        </select>
+        <div class="err">Please choose a destination.</div>
+      </div>
+
+      <div class="field">
+        <label>Reason</label>
+        <textarea id="fReason" placeholder="Brief reason for outing…" required></textarea>
+        <div class="err">A short reason is required.</div>
+      </div>
+
+      <div class="field">
+        <label>Supporting Document <span class="field-hint">Optional</span></label>
+        <div class="upload-box" id="uploadBox">
+          <div class="upload-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 20h16"/></svg>
+          </div>
+          <div class="upload-text">
+            <b>Attach approval or note</b>
+            <span>PDF, JPG, PNG up to 5MB</span>
+          </div>
+          <span class="upload-browse">Browse</span>
+        </div>
+        <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png">
+        <div class="file-chip" id="fileChip"><span id="fileName"></span><button type="button" id="fileRemove">✕</button></div>
+      </div>
+
+      <div class="duration-strip">
+        <span id="durationText">⏱ Duration: 3 hours</span>
+        <span class="tag" id="durationTag">STANDARD DAY OUTING</span>
+      </div>
+
+      <button type="submit" class="btn btn-primary">Submit Leave Request</button>
+      <button type="button" class="btn btn-outline" style="margin-top:10px;" id="cancelApply">Cancel</button>
+    </form>
+  </div>
+
+  <!-- ===== MY LEAVES SCREEN ===== -->
+  <div class="screen" id="view-myleaves">
+    <div class="section-title" style="margin-top:6px;">My Leaves</div>
+    <div class="chip-row" id="chipRow">
+      <div class="chip active" data-filter="all">All</div>
+      <div class="chip" data-filter="pending">Pending</div>
+      <div class="chip" data-filter="approved">Approved</div>
+      <div class="chip" data-filter="completed">Completed</div>
+    </div>
+    <div id="myLeavesList" style="margin-top:8px;"></div>
+  </div>
+
+  <!-- ===== PROFILE SCREEN ===== -->
+  <div class="screen" id="view-profile">
+    <div class="profile-head">
+      <div class="avatar-photo-wrap">
+        <div class="profile-avatar" id="pAvatarLetter">K</div>
+        <button class="avatar-edit-badge" id="avatarEditBtn" title="Change profile photo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </button>
+        <input type="file" id="avatarFileInput" accept="image/*">
+      </div>
+      <h3 id="pName">Karma Wangchuk</h3>
+      <span id="pSubline">Student ID 12250001 · GCIT</span>
+    </div>
+
+    <div class="info-list" id="infoList">
+      <div class="info-row" data-field="name"><span>Full Name</span><span class="info-val" id="vName">Karma Wangchuk</span></div>
+      <div class="info-row" data-field="department"><span>Department</span><span class="info-val" id="vDepartment">Information Technology</span></div>
+      <div class="info-row" data-field="year"><span>Year</span><span class="info-val" id="vYear">2nd Year</span></div>
+      <div class="info-row" data-field="guardian"><span>Guardian Contact</span><span class="info-val" id="vGuardian">+975 17 2xx xxx</span></div>
+      <div class="info-row"><span>Gate Pass Status</span><span style="color:var(--green-700);">Active</span></div>
+    </div>
+    <div class="field-hint-note" id="lockedNote">Student ID and Gate Pass Status are managed by the registrar and can't be edited here.</div>
+
+    <button class="btn btn-orange" style="margin-top:16px;" id="editProfileBtn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:6px;"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+      Edit Profile
+    </button>
+
+    <div id="editActions" style="display:none;gap:10px;margin-top:10px;">
+      <button class="btn btn-primary" style="margin-top:0;flex:1;" id="saveProfileBtn">Save Changes</button>
+      <button class="btn btn-outline" style="flex:1;" id="cancelProfileBtn">Cancel</button>
+    </div>
+
+    <button class="btn btn-outline" style="margin-top:12px;color:#C0392B;border-color:#F1CFCF;" id="logoutBtn">Log Out</button>
+  </div>
+
+  <!-- ===== LEAVE DETAIL SCREEN ===== -->
+  <div class="screen" id="view-detail">
+
+    <div class="pass-row">
+      <span class="official-pill"><span class="sq"></span> OFFICIAL PASS</span>
+      <span class="status-pill" id="dStatusPill">APPROVED</span>
+    </div>
+
+    <div class="detail-title" id="dDest">Thimphu Town</div>
+    <div class="detail-date">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
+      <span id="dDate">05 September 2026</span>
+    </div>
+
+    <div class="authority-card">
+      <div class="authority-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/></svg>
+      </div>
+      <div class="authority-text">
+        <div class="lbl">HOSTEL AUTHORITY</div>
+        <div class="name" id="dWarden">Warden Sonam Dorji</div>
+        <div class="sub" id="dBlock">GCIT Block-C</div>
+      </div>
+    </div>
+
+    <div class="detail-section-title">Schedule Parameters <span class="duration-chip" id="dDuration">3h 00m Duration</span></div>
+    <div class="schedule-grid">
+      <div class="schedule-box">
+        <div class="sb-lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg> Exit Window</div>
+        <div class="sb-time" id="dExit">5:00 PM</div>
+        <div class="sb-sub">Main Campus Arch</div>
+      </div>
+      <div class="schedule-box">
+        <div class="sb-lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg> Expected Return</div>
+        <div class="sb-time" id="dReturn">8:00 PM</div>
+        <div class="sb-sub">Curfew Checkpoint</div>
+      </div>
+    </div>
+
+    <div class="detail-section-title">Purpose of Outing</div>
+    <div class="purpose-box" id="dPurpose">Personal work / academic supplies purchase.</div>
+
+    <div class="detail-section-title">Verification Log <span class="duration-chip" id="dStage">STAGE 2 OF 4</span></div>
+    <div class="log-list" id="logList"></div>
+
+    <button class="qr-btn" id="qrBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM19 14h2v2h-2zM14 19h2v2h-2zM19 19h2v2h-2z"/></svg>
+      Show Digital Gate QR Pass
+    </button>
+  </div>
+
+  <!-- ===== BOTTOM NAV ===== -->
+  <div class="bottom-nav">
+    <button class="nav-btn active" data-view="view-home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>
+      Home
+    </button>
+    <button class="nav-btn" data-view="view-apply">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+      Apply Leave
+    </button>
+    <button class="nav-btn" data-view="view-myleaves">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6l1 3H8l1-3z"/><rect x="4" y="6" width="16" height="15" rx="2"/><path d="M9 12h6M9 16h6"/></svg>
+      My Leaves
+    </button>
+    <button class="nav-btn" data-view="view-profile">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4.5 5-6 8-6s6.5 1.5 8 6"/></svg>
+      Profile
+    </button>
+  </div>
+
+  <div class="toast" id="toast">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+    <span id="toastText">Leave request submitted.</span>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  // -------- in-memory state (no localStorage per artifact sandbox rules) --------
+  let leaves = [
+    {id:1, destination:'Gyalpozhing Market', date:'2026-09-01', dateLabel:'01 Sep 2026', reason:'Personal errand', status:'approved', duration:'3 hours',
+      exitTime:'5:00 PM', returnTime:'8:00 PM', purpose:'Personal errand — pick up a parcel and buy stationery for the semester.',
+      zone:'Gyalpozhing Market Zone', warden:'Warden Sonam Dorji', block:'GCIT Block-C', passId:'GCIT-2026-0114'},
+    {id:2, destination:'Thimphu Town', date:'2026-08-24', dateLabel:'24 Aug 2026', reason:'Family visit', status:'completed', duration:'5 hours',
+      exitTime:'10:00 AM', returnTime:'3:00 PM', purpose:'Family visit — spending the day with parents in town before the term picks up.',
+      zone:'Thimphu Municipal Zone 1', warden:'Warden Sonam Dorji', block:'GCIT Block-C', passId:'GCIT-2026-0098'},
+    {id:3, destination:'Library Research', date:'2026-08-12', dateLabel:'12 Aug 2026', reason:'Academic off-campus', status:'completed', duration:'2 hours',
+      exitTime:'1:00 PM', returnTime:'3:00 PM', purpose:'Academic off-campus research — referencing archival material at the National Library.',
+      zone:'Thimphu Municipal Zone 1', warden:'Warden Sonam Dorji', block:'GCIT Block-C', passId:'GCIT-2026-0071'}
+  ];
+  let nextId = 4;
+  let currentFilter = 'all';
+
+  const $ = (id) => document.getElementById(id);
+  const views = ['view-home','view-apply','view-myleaves','view-profile','view-detail'];
+
+  let lastListView = 'view-home';
+
+  function showView(id){
+    views.forEach(v => $(v).classList.toggle('active', v===id));
+    document.querySelectorAll('.nav-btn').forEach(btn=>{
+      btn.classList.toggle('active', btn.dataset.view === id);
+    });
+
+    const isDetail = id === 'view-detail';
+    $('mainTopbar').style.display = isDetail ? 'none' : '';
+    $('detailHeader').classList.toggle('active', isDetail);
+    document.querySelector('.bottom-nav').style.display = isDetail ? 'none' : '';
+
+    if(id !== 'view-detail') lastListView = id;
+    if(id === 'view-home') renderHome();
+    if(id === 'view-myleaves') renderMyLeaves();
+    if(id === 'view-profile') renderProfile();
+    if(id !== 'view-profile' && isEditingProfile) exitProfileEditMode();
+    closeNotif();
+    window.scrollTo({top:0,behavior:'instant'});
+  }
+
+  document.querySelectorAll('.nav-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=> showView(btn.dataset.view));
+  });
+  $('applyBtnHome').addEventListener('click', ()=> showView('view-apply'));
+  $('viewAllLink').addEventListener('click', ()=> showView('view-myleaves'));
+  $('cancelApply').addEventListener('click', ()=> { resetForm(); showView('view-home'); });
+  $('avatarBtn').addEventListener('click', ()=> showView('view-profile'));
+  $('detailBack').addEventListener('click', ()=> showView(lastListView));
+
+  // ---------- notifications dropdown ----------
+  const notifPanel = $('notifPanel');
+  $('bellBtn').addEventListener('click', (e)=>{
+    e.stopPropagation();
+    notifPanel.classList.toggle('open');
+  });
+  function closeNotif(){ notifPanel.classList.remove('open'); }
+  document.addEventListener('click', (e)=>{
+    if(!notifPanel.contains(e.target) && e.target !== $('bellBtn')) closeNotif();
+  });
+
+  // ---------- badge helpers ----------
+  function badge(status){
+    const map = {pending:['badge-pending','PENDING'], approved:['badge-approved','APPROVED'], completed:['badge-completed','COMPLETED']};
+    const [cls,label] = map[status] || map.pending;
+    return `<span class="status-badge ${cls}">${label}</span>`;
+  }
+
+  // ---------- HOME render ----------
+  function renderHome(){
+    const upcoming = leaves.find(l => l.status === 'pending' || l.status === 'approved');
+    const box = $('upcomingBox');
+    if(upcoming){
+      box.innerHTML = `
+        <div class="ticket clickable-ticket" data-id="${upcoming.id}">
+          <div class="ticket-top">
+            <div><div class="ticket-dest">${upcoming.destination}</div><div class="ticket-date">${upcoming.dateLabel}</div></div>
+            ${badge(upcoming.status)}
+          </div>
+          <div class="ticket-divider"></div>
+          <div class="ticket-meta"><span>Duration <b>${upcoming.duration}</b></span><span>Reason <b>${upcoming.reason}</b></span></div>
+          <button class="btn ticket-cancel" data-id="${upcoming.id}">Cancel Request</button>
+        </div>`;
+      box.querySelector('.ticket-cancel').addEventListener('click', (e)=>{
+        e.stopPropagation();
+        const id = Number(e.currentTarget.dataset.id);
+        leaves = leaves.filter(l=>l.id!==id);
+        showToast('Leave request cancelled.');
+        renderHome(); renderMyLeaves();
+      });
+      box.querySelector('.clickable-ticket').addEventListener('click', ()=> openLeaveDetail(upcoming.id));
+      $('statusLabel').textContent = 'ON LEAVE';
+      $('statusSub').textContent = `Currently out · ${upcoming.destination}`;
+    } else {
+      box.innerHTML = `
+        <div class="empty-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
+          <div>No upcoming leave.</div>
+        </div>`;
+      $('statusLabel').textContent = 'ON CAMPUS';
+      $('statusSub').textContent = 'No active leave today.';
+    }
+
+    const list = leaves.slice(0,4);
+    $('activityList').innerHTML = list.map(l => `
+      <div class="activity-item clickable-activity" data-id="${l.id}">
+        <div class="activity-left"><b>${l.destination}</b><span>${l.dateLabel} · ${l.reason}</span></div>
+        ${badge(l.status)}
+      </div>
+    `).join('') || '<div class="empty-box">No activity yet.</div>';
+    $('activityList').querySelectorAll('.clickable-activity').forEach(row=>{
+      row.addEventListener('click', ()=> openLeaveDetail(Number(row.dataset.id)));
+    });
+  }
+
+  // ---------- MY LEAVES render ----------
+  document.querySelectorAll('.chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+      chip.classList.add('active');
+      currentFilter = chip.dataset.filter;
+      renderMyLeaves();
+    });
+  });
+
+  function renderMyLeaves(){
+    const filtered = currentFilter === 'all' ? leaves : leaves.filter(l=>l.status===currentFilter);
+    const sorted = [...filtered].sort((a,b)=> new Date(b.date) - new Date(a.date));
+    $('myLeavesList').innerHTML = sorted.map(l => `
+      <div class="ticket clickable-ticket" style="margin-bottom:12px;" data-id="${l.id}">
+        <div class="ticket-top">
+          <div><div class="ticket-dest">${l.destination}</div><div class="ticket-date">${l.dateLabel}</div></div>
+          ${badge(l.status)}
+        </div>
+        <div class="ticket-divider"></div>
+        <div class="ticket-meta"><span>Duration <b>${l.duration}</b></span><span>Reason <b>${l.reason}</b></span></div>
+      </div>
+    `).join('') || '<div class="empty-box">No leaves in this category.</div>';
+    $('myLeavesList').querySelectorAll('.clickable-ticket').forEach(row=>{
+      row.addEventListener('click', ()=> openLeaveDetail(Number(row.dataset.id)));
+    });
+  }
+
+  // ---------- LEAVE DETAIL ----------
+  function stageForStatus(l){
+    // returns {stage, items:[{label,desc,time,state}]}
+    const submittedTime = l.submittedTime || '04 Sep, 10:30 AM';
+    const sanctionTime = l.sanctionTime || '04 Sep, 2:15 PM';
+    const scanTime = l.scanTime || null;
+    const clearTime = l.clearTime || null;
+
+    let items = [
+      {label:'Leave Request Submitted', desc:`Self-filed via CampusX Portal`, time:submittedTime, state:'done'},
+    ];
+
+    if(l.status === 'pending'){
+      items.push({label:'Faculty Sanction Pending', desc:'Awaiting review by hostel warden', time:'', state:'active'});
+      items.push({label:'Main Gate Scan Out', desc:'Awaiting NFC / QR scan at South Security Checkpoint', time:'', state:'pending'});
+      items.push({label:'Return Clearance', desc:'Automated timestamp before curfew threshold', time:'', state:'pending'});
+      return {stage:1, items};
+    }
+    items.push({label:'Faculty Sanction Granted', desc:`Digitally countersigned by ${l.warden || 'the warden'}`, time:sanctionTime, state:'done'});
+
+    if(l.status === 'approved'){
+      items.push({label:'Main Gate Scan Out', desc:'Awaiting NFC / QR scan at South Security Checkpoint', time:'', state:'active'});
+      items.push({label:'Return Clearance', desc:'Automated timestamp before curfew threshold', time:'', state:'pending'});
+      return {stage:2, items};
+    }
+
+    // completed
+    items.push({label:'Main Gate Scan Out', desc:'Verified at South Security Checkpoint', time:scanTime || `${l.dateLabel}, ${l.exitTime}`, state:'done'});
+    items.push({label:'Return Clearance', desc:'Verified back on campus, within curfew window', time:clearTime || `${l.dateLabel}, ${l.returnTime}`, state:'done'});
+    return {stage:4, items};
+  }
+
+  function openLeaveDetail(id){
+    const l = leaves.find(x=>x.id===id);
+    if(!l) return;
+
+    $('dDest').textContent = l.destination;
+    $('dDate').textContent = new Date(l.date+'T00:00:00').toLocaleDateString('en-US',{day:'2-digit',month:'long',year:'numeric'});
+    $('dWarden').textContent = l.warden || 'Warden Sonam Dorji';
+    $('dBlock').textContent = l.block || 'GCIT Block-C';
+    $('dDuration').textContent = `${l.duration} Duration`;
+    $('dExit').textContent = l.exitTime || '—';
+    $('dReturn').textContent = l.returnTime || '—';
+    $('dPurpose').textContent = l.purpose || l.reason;
+    // dZone/dPassId fields removed from the simplified detail view
+
+    const pill = $('dStatusPill');
+    pill.className = 'status-pill ' + l.status;
+    pill.textContent = l.status === 'pending' ? 'PENDING SANCTION' : l.status.toUpperCase();
+
+    const {stage, items} = stageForStatus(l);
+    $('dStage').textContent = `STAGE ${stage} OF 4`;
+    $('logList').innerHTML = items.map(it => `
+      <div class="log-item ${it.state}">
+        <div class="log-dot ${it.state}">
+          ${it.state==='done' ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>' : (it.state==='active' ? '<span class="inner"></span>' : '')}
+        </div>
+        <div class="log-body">
+          <div class="log-top">
+            <span class="log-label">${it.label}</span>
+            ${it.state==='active' ? '<span class="log-status ready">READY</span>' : (it.state==='pending' ? '<span class="log-status pend">PENDING</span>' : '')}
+          </div>
+          <div class="log-desc">${it.time ? it.time+' — ' : ''}${it.desc}</div>
+        </div>
+      </div>
+    `).join('');
+
+    showView('view-detail');
+  }
+
+  $('qrBtn').addEventListener('click', ()=> showToast('Digital gate pass ready — present at checkpoint scanner.'));
+
+  // ---------- APPLY LEAVE FORM ----------
+  const dateInput = $('fDate');
+  const today = new Date();
+  dateInput.value = today.toISOString().split('T')[0];
+  dateInput.min = today.toISOString().split('T')[0];
+
+  function computeDuration(){
+    const exit = $('fExit').value, ret = $('fReturn').value;
+    if(!exit || !ret) return;
+    const [eh,em] = exit.split(':').map(Number);
+    const [rh,rm] = ret.split(':').map(Number);
+    let mins = (rh*60+rm) - (eh*60+em);
+    const field = $('fReturn').closest('.field');
+    if(mins <= 0){
+      $('durationText').textContent = '⏱ Duration: —';
+      $('durationTag').textContent = 'INVALID RANGE';
+      field.classList.add('invalid');
+      return false;
+    }
+    field.classList.remove('invalid');
+    const h = Math.floor(mins/60), m = mins%60;
+    const label = `${h>0? h+'h ':''}${m>0? m+'m':''}`.trim() || '0m';
+    $('durationText').textContent = `⏱ Duration: ${label}`;
+    $('durationTag').textContent = mins <= 240 ? 'STANDARD DAY OUTING' : mins <= 720 ? 'EXTENDED OUTING' : 'OVERNIGHT / MULTI-DAY';
+    return {h,m,mins,label};
+  }
+  $('fExit').addEventListener('change', computeDuration);
+  $('fReturn').addEventListener('change', computeDuration);
+  computeDuration();
+
+  // file upload
+  const uploadBox = $('uploadBox'), fileInput = $('fileInput'), fileChip = $('fileChip'), fileName = $('fileName');
+  uploadBox.addEventListener('click', ()=> fileInput.click());
+  fileInput.addEventListener('change', ()=>{
+    if(fileInput.files.length){
+      fileName.textContent = '📎 ' + fileInput.files[0].name;
+      fileChip.classList.add('show');
+    }
+  });
+  $('fileRemove').addEventListener('click', (e)=>{
+    e.stopPropagation();
+    fileInput.value = '';
+    fileChip.classList.remove('show');
+  });
+
+  function resetForm(){
+    $('leaveForm').reset();
+    dateInput.value = today.toISOString().split('T')[0];
+    $('fExit').value = '17:00';
+    $('fReturn').value = '20:00';
+    fileChip.classList.remove('show');
+    document.querySelectorAll('.field').forEach(f=>f.classList.remove('invalid'));
+    computeDuration();
+  }
+
+  $('leaveForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    let valid = true;
+    const dest = $('fDest'), reason = $('fReason');
+
+    [{el:dateInput, ok:!!dateInput.value}, {el:dest, ok:!!dest.value}, {el:reason, ok: reason.value.trim().length>2}]
+      .forEach(({el,ok})=>{
+        const field = el.closest('.field');
+        field.classList.toggle('invalid', !ok);
+        if(!ok) valid = false;
+      });
+
+    const dur = computeDuration();
+    if(!dur) valid = false;
+
+    if(!valid){ showToast('Please fix the highlighted fields.', true); return; }
+
+    const dateObj = new Date(dateInput.value + 'T00:00:00');
+    const dateLabel = dateObj.toLocaleDateString('en-US', {day:'2-digit', month:'short', year:'numeric'});
+
+    function to12h(hhmm){
+      const [h,m] = hhmm.split(':').map(Number);
+      const period = h >= 12 ? 'PM' : 'AM';
+      const h12 = h % 12 === 0 ? 12 : h % 12;
+      return `${h12}:${String(m).padStart(2,'0')} ${period}`;
+    }
+
+    leaves.unshift({
+      id: nextId++,
+      destination: dest.value,
+      date: dateInput.value,
+      dateLabel,
+      reason: reason.value.trim(),
+      status: 'pending',
+      duration: dur.label,
+      exitTime: to12h($('fExit').value),
+      returnTime: to12h($('fReturn').value),
+      purpose: reason.value.trim(),
+      zone: dest.value,
+      warden: 'Warden Sonam Dorji',
+      block: 'GCIT Block-C',
+      passId: `GCIT-2026-0${100+nextId}`
+    });
+
+    showToast('Leave request submitted for approval.');
+    resetForm();
+    showView('view-home');
+  });
+
+  // ---------- profile ----------
+  let profile = {
+    name: 'Karma Wangchuk',
+    studentId: '12250001',
+    department: 'Information Technology',
+    year: '2nd Year',
+    guardian: '+975 17 2xx xxx',
+    photoUrl: null
+  };
+  const profileFieldMap = {
+    name: 'vName', department: 'vDepartment', year: 'vYear', guardian: 'vGuardian'
+  };
+  const yearOptions = ['1st Year','2nd Year','3rd Year','4th Year','5th Year'];
+  let isEditingProfile = false;
+
+  function applyAvatar(el){
+    if(profile.photoUrl){
+      el.style.backgroundImage = `url(${profile.photoUrl})`;
+      el.style.backgroundSize = 'cover';
+      el.style.backgroundPosition = 'center';
+      el.textContent = '';
+    } else {
+      el.style.backgroundImage = '';
+      el.textContent = profile.name.trim().charAt(0).toUpperCase() || 'K';
+    }
+  }
+
+  function renderProfile(){
+    Object.keys(profileFieldMap).forEach(key => {
+      $(profileFieldMap[key]).textContent = profile[key];
+    });
+    $('pName').textContent = profile.name;
+    $('pSubline').textContent = `Student ID ${profile.studentId} · GCIT`;
+    applyAvatar($('pAvatarLetter'));
+    applyAvatar($('avatarBtn'));
+    applyAvatar($('detailAvatar'));
+  }
+
+  $('avatarEditBtn').addEventListener('click', ()=> $('avatarFileInput').click());
+  $('avatarFileInput').addEventListener('change', ()=>{
+    const file = $('avatarFileInput').files[0];
+    if(!file) return;
+    if(file.size > 5*1024*1024){ showToast('Please choose an image under 5MB.', true); return; }
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      profile.photoUrl = reader.result;
+      renderProfile();
+      showToast('Profile photo updated.');
+    };
+    reader.readAsDataURL(file);
+  });
+
+  function enterProfileEditMode(){
+    isEditingProfile = true;
+    document.querySelectorAll('#infoList .info-row[data-field]').forEach(row=>{
+      const field = row.dataset.field;
+      const valSpan = row.querySelector('.info-val');
+      let input;
+      if(field === 'year'){
+        input = document.createElement('select');
+        input.className = 'info-val-input';
+        yearOptions.forEach(opt=>{
+          const o = document.createElement('option');
+          o.value = opt; o.textContent = opt;
+          if(opt === profile.year) o.selected = true;
+          input.appendChild(o);
+        });
+      } else {
+        input = document.createElement('input');
+        input.type = field === 'guardian' ? 'tel' : 'text';
+        input.className = 'info-val-input';
+        input.value = profile[field];
+      }
+      input.dataset.field = field;
+      valSpan.replaceWith(input);
+    });
+    $('editProfileBtn').style.display = 'none';
+    $('lockedNote').style.display = 'none';
+    $('editActions').style.display = 'flex';
+  }
+
+  function exitProfileEditMode(){
+    isEditingProfile = false;
+    document.querySelectorAll('#infoList .info-row[data-field] .info-val-input').forEach(input=>{
+      const span = document.createElement('span');
+      span.className = 'info-val';
+      span.id = profileFieldMap[input.dataset.field];
+      span.textContent = profile[input.dataset.field];
+      input.replaceWith(span);
+    });
+    $('editProfileBtn').style.display = '';
+    $('lockedNote').style.display = '';
+    $('editActions').style.display = 'none';
+  }
+
+  $('editProfileBtn').addEventListener('click', enterProfileEditMode);
+
+  $('cancelProfileBtn').addEventListener('click', ()=>{
+    exitProfileEditMode();
+  });
+
+  $('saveProfileBtn').addEventListener('click', ()=>{
+    const inputs = document.querySelectorAll('#infoList .info-val-input');
+    let valid = true;
+    inputs.forEach(input=>{
+      if(!input.value.trim()){
+        input.style.borderColor = '#C0392B';
+        valid = false;
+      } else {
+        input.style.borderColor = '';
+      }
+    });
+    if(!valid){ showToast('Please fill in every field before saving.', true); return; }
+
+    inputs.forEach(input=>{ profile[input.dataset.field] = input.value.trim(); });
+    exitProfileEditMode();
+    renderProfile();
+    showToast('Profile updated successfully.');
+  });
+
+  $('logoutBtn').addEventListener('click', ()=> showToast('You have been logged out.'));
+
+  // ---------- toast ----------
+  let toastTimer;
+  function showToast(msg, isError){
+    const toast = $('toast');
+    $('toastText').textContent = msg;
+    toast.style.background = isError ? '#9C3B2E' : 'var(--green-900)';
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=> toast.classList.remove('show'), 2600);
+  }
+
+  // ---------- init ----------
+  renderHome();
+  renderProfile();
+})();
+</script>
+
+</body>
+</html>
