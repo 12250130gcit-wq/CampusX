@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#76B543" />
+  <title>CampusX · GCIT Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/theme.css" />
+  <link rel="stylesheet" href="admin.css" />
+  <script src="../assets/auth.js"></script>
+<script src="../assets/store.js"></script>
+  <script>
+    // Gate this page: only a logged-in SSO Admin may view it.
+    var cxSession = CXAuth.requireRole('sso');
+  </script>
+</head>
+<body data-depth="1">
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="#dashboard" aria-label="CampusX dashboard">
+        <img src="../assets/gcit-logo.png" alt="GCIT logo" />
+        <div><strong>CampusX</strong><span>GCIT Administration</span></div>
+      </a>
+      <nav id="mainNav" aria-label="Main navigation">
+        <button class="nav-item active" data-page="dashboard"><span>⌂</span> Overview</button>
+        <button class="nav-item" data-page="leave"><span>▤</span> Leave requests <b id="pendingBadge">0</b></button>
+        <button class="nav-item" data-page="movement"><span>↔</span> Live movement</button>
+        <button class="nav-item" data-page="gate"><span>▣</span> Gate verification <b id="gateBadge">0</b></button>
+        <button class="nav-item" data-page="visitors"><span>♙</span> Visitors</button>
+        <button class="nav-item" data-page="students"><span>◎</span> Students</button>
+        <button class="nav-item" data-page="reports"><span>◫</span> Reports & audit</button>
+        <button class="nav-item" data-page="settings"><span>⚙</span> Settings</button>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="avatar" id="sidebarAvatar">KW</div><div><strong id="sidebarName">Karma Wangdi</strong><span>System Administrator · SSO</span></div>
+        <button id="logoutBtn" aria-label="Log out">↪</button>
+      </div>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <button class="icon-btn mobile-only" id="menuBtn" aria-label="Open menu">☰</button>
+        <div><p id="eyebrow">Wednesday, 09 September</p><h1 id="pageTitle">Good morning, Karma</h1></div>
+        <div class="top-actions">
+          <label class="global-search"><span>⌕</span><input id="globalSearch" placeholder="Search student, ID or visitor…" /></label>
+          <button class="icon-btn" id="notificationBtn" aria-label="Notifications">♢<i></i></button>
+          <button class="topbar-profile" id="topbarProfileBtn" aria-label="Open profile" title="View profile">
+            <div class="avatar" id="topbarAvatar">KW</div>
+            <div class="topbar-profile-text">
+              <div class="n" id="topbarProfileName">Karma Wangdi</div>
+              <div class="r">SSO Admin</div>
+            </div>
+          </button>
+        </div>
+      </header>
+      <section id="content" class="content"></section>
+    </main>
+  </div>
+  <div id="modalRoot"></div>
+  <div id="toastRoot" aria-live="polite"></div>
+  <script src="admin.js"></script>
+</body>
+</html>
