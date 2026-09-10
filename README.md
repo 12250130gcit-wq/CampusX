@@ -1,43 +1,66 @@
 # CampusX · GCIT — Unified Portal
 
-One login screen, three completely separate, interlinked accounts.
+A front-end portal prototype that presents one shared login screen for three distinct account types: Student, SSO Admin, and Gatekeeper.
 
-## How to run
-Just open `index.html` in a browser (or serve the folder with any static
-server, e.g. `python3 -m http.server`, then visit `/index.html`).
+## Run locally
 
-## Structure
+1. Open [index.html](index.html) directly in a browser, or
+2. Serve the folder from the project root:
+
+```bash
+python -m http.server 8000
 ```
-index.html          → Unified login / register (role picker: Student, SSO Admin, Gatekeeper)
-assets/theme.css     → Shared GCIT brand colors (sampled from the crest) used by all 3 apps
-assets/auth.js       → Shared session system (localStorage-based, front-end only)
-student/index.html   → Student portal (apply for leave, gate pass, profile)
-sso/index.html       → SSO Admin console (leave approvals, students, reports, settings)
-gatekeeper/*.html    → Gatekeeper app (scan/verify, visitors, movement logs, overdue, etc.)
+
+Then visit:
+
+```text
+http://localhost:8000/
+```
+
+## Project structure
+
+```text
+CampusX/
+├── index.html                 → Unified login and registration screen
+├── README.md                  → Project overview and quick start
+├── assets/
+│   ├── auth.js                → Shared session/auth logic
+│   ├── store.js               → Shared localStorage data layer
+│   ├── theme.css              → Shared brand/theme tokens
+│   └── gcit-logo.png          → GCIT logo asset
+├── student/
+│   └── index.html             → Student portal
+├── sso/
+│   ├── index.html             → SSO Admin console
+│   └── admin.css              → Admin styling
+│   └── admin.js               → Admin logic
+└── gatekeeper/
+    ├── css/
+    │   ├── style.css          → Gatekeeper app styling
+    │   └── js/
+    │       ├── main.js        → Gatekeeper shell/navigation
+    │       ├── data.js        → Demo data + persistence
+    │       ├── verification.js
+    │       └── dashboard.js
 ```
 
 ## Demo accounts
-| Role        | ID            | Password       |
-|-------------|---------------|----------------|
-| Student     | STU-2024-014  | student123     |
-| SSO Admin   | ADM-SSO-001   | sso@admin123   |
-| Gatekeeper  | GK-001        | gate@2024      |
 
-You can also register a brand-new account for any of the three roles from
-the login page — it's saved in the browser's localStorage so you can log
-back in with it during the same session/browser.
+| Role | ID | Password |
+| --- | --- | --- |
+| Student | STU-2024-014 | student123 |
+| SSO Admin | ADM-SSO-001 | sso@admin123 |
+| Gatekeeper | GK-001 | gate@2024 |
 
-## How the accounts stay separate but connected
-- Every portal page calls `CXAuth.requireRole('...')` on load. If there's
-  no session, or the session belongs to a different role, the visitor is
-  bounced back to the root login page automatically.
-- Logging out from any portal (Student, SSO Admin, or Gatekeeper) clears
-  the shared session and returns to the single login screen.
-- All three portals share the same color theme (`assets/theme.css`) and
-  the same logo/brand assets, so they read as one connected product even
-  though each account, dataset, and dashboard is fully separate.
+You can also register a new account from the main login screen. Those accounts are stored in the browser's localStorage so they remain available while using the same browser session.
+
+## How the system works
+
+- Each role has its own login flow and protected dashboard.
+- The shared auth system checks the active session before allowing access to the app pages.
+- The same browser storage is reused across the student, SSO, and gatekeeper experiences so demo data remains connected.
+- Logout clears the session and sends the user back to the root login screen.
 
 ## Notes
-This is a front-end prototype — there's no real backend, so "accounts"
-and app data both live in the browser's `localStorage`. Wiring this up to
-a real authentication service and database is the natural next step.
+
+This is a front-end prototype. It does not connect to a real backend or authentication service. All account and app data live in localStorage for demo and prototype purposes.
