@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Students Outside · CampusX GCIT</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<link rel="stylesheet" href="css/style.css">
+<script src="../assets/auth.js"></script>
+<script src="../assets/store.js"></script>
+<script>var cxSession = CXAuth.requireRole("gatekeeper");</script>
+</head>
+<body data-depth="1">
+<script>window.CX_PAGE='outside'; window.CX_TITLE='Students Outside Campus';</script>
+
+<div class="app-shell">
+  <aside class="sidebar"><div id="sidebar-root"></div></aside>
+  <div id="backdrop-root"></div>
+
+  <div class="main-col">
+    <header class="topbar" id="topbar-root"></header>
+
+    <main class="page">
+      <div class="page-head">
+        <div>
+          <h2>Students Outside Campus</h2>
+          <p class="desc" id="outside-count">Loading…</p>
+        </div>
+        <a href="verification.html" class="btn btn-primary">Scan Student</a>
+      </div>
+
+      <div class="search-row">
+        <div class="search-box">
+          <span data-icon="search"></span>
+          <input type="text" id="search-input" placeholder="Search by name, ID or destination…">
+        </div>
+        <button class="filter-chip active" data-filter="all">All</button>
+        <button class="filter-chip" data-filter="outside">Approved &amp; Out</button>
+        <button class="filter-chip" data-filter="overdue">Overdue</button>
+      </div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Student</th><th>ID</th><th>Destination</th><th>Exit</th><th>Expected Return</th><th>Status</th><th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="outside-tbody"></tbody>
+          </table>
+        </div>
+        <div class="record-cards" id="outside-cards" style="padding:14px;"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div id="toast-stack"></div>
+
+<script src="js/data.js"></script>
+<script src="js/main.js"></script>
+<script>
+let cxFilter = 'all';
+
+function cxRenderOutside(){
+  const q = document.getElementById('search-input').value.trim().toLowerCase();
+  let list = CxData.getStudents().filter(s => s.status === 'outside' || s.status === 'overdue');
+
+  if(cxFilter === 'outside') list = list.filter(s => s.status === 'outside');
+  if(cxFilter === 'overdue') list = list.filter(s => s.status === 'overdue');
+  if(q) list = list.filter(s => s.name.toLowerCase().includes(q) || s.id.includes(q) || s.destination.toLowerCase().includes(q));
+
+  document.getElementById('outside-count').textContent = `${list.length} student${list.length === 1 ? '' : 's'} currently outside campus`;
+
+  const rows = list.map(s => `
+    <tr>
+      <td><strong>${s.name}</strong><div class="text-muted" style="font-size:11.5px;">${s.program}</div></td>
+      <td class="mono">${s.id}</td>
+      <td>${s.destination}</td>
+      <td class="mono">${s.exitTime}</td>
+      <td class="mono">${s.expectedReturn}</td>
+      <td>${cxStatusBadge(s.status)}</td>
+      <td>
+        <div class="row-actions">
+          <button class="btn btn-outline btn-sm" onclick="location.href='students.html?id=${s.id}'">View</button>
+          <button class="btn btn-outline btn-sm" onclick="alert('Calling ${s.name} at ${s.contact}…')"><span data-icon="phone"></span></button>
+          <button class="btn btn-success btn-sm" onclick="cxOutsideReturn('${s.id}')">Return</button>
+        </div>
+      </td>
+    </tr>`).join('');
+
+  const cards = list.map(s => `
+    <div class="record-card">
+      <div class="rc-top">
+        <div><div class="rc-name">${s.name}</div><div class="rc-id mono">#${s.id}</div></div>
+        ${cxStatusBadge(s.status)}
+      </div>
+      <div class="rc-body">
+        <div class="rc-field"><div class="k">Destination</div><div class="v">${s.destination}</div></div>
+        <div class="rc-field"><div class="k">Exit</div><div class="v mono">${s.exitTime}</div></div>
+        <div class="rc-field"><div class="k">Expected</div><div class="v mono">${s.expectedReturn}</div></div>
+      </div>
+      <div class="rc-actions">
+        <button class="btn btn-outline btn-sm" onclick="location.href='students.html?id=${s.id}'">View</button>
+        <button class="btn btn-success btn-sm" onclick="cxOutsideReturn('${s.id}')">Record Return</button>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('outside-tbody').innerHTML = rows || `<tr><td colspan="7"><div class="empty-state"><div class="t">No students match</div></div></td></tr>`;
+  document.getElementById('outside-cards').innerHTML = cards || `<div class="empty-state"><div class="t">No students match</div></div>`;
+  cxFillIcons();
+}
+
+function cxOutsideReturn(id){
+  CxData.recordReturn(id);
+  cxToast('Return recorded', 'success');
+  cxRenderOutside();
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  cxRenderOutside();
+  document.getElementById('search-input').addEventListener('input', cxRenderOutside);
+  document.querySelectorAll('.filter-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      cxFilter = chip.dataset.filter;
+      cxRenderOutside();
+    });
+  });
+});
+</script>
+</body>
+</html>

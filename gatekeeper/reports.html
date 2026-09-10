@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reports & Analytics · CampusX GCIT</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .bar-chart{ display:flex; align-items:flex-end; gap:10px; height:160px; padding:10px 4px 0; }
+  .bar-chart .col{ flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; height:100%; justify-content:flex-end; }
+  .bar-chart .bar{ width:100%; max-width:34px; border-radius:4px 4px 0 0; background:var(--orange); position:relative; min-height:3px; }
+  .bar-chart .bar.alt{ background:var(--black); }
+  .bar-chart .lbl{ font-size:10.5px; color:var(--gray-muted); }
+  .legend-dot{ width:8px;height:8px;border-radius:2px; display:inline-block; margin-right:5px; }
+</style>
+<script src="../assets/auth.js"></script>
+<script src="../assets/store.js"></script>
+<script>var cxSession = CXAuth.requireRole("gatekeeper");</script>
+</head>
+<body data-depth="1">
+<script>window.CX_PAGE='reports'; window.CX_TITLE='Reports & Analytics';</script>
+
+<div class="app-shell">
+  <aside class="sidebar"><div id="sidebar-root"></div></aside>
+  <div id="backdrop-root"></div>
+
+  <div class="main-col">
+    <header class="topbar" id="topbar-root"></header>
+
+    <main class="page">
+      <div class="page-head">
+        <div>
+          <h2>Reports &amp; Analytics</h2>
+          <p class="desc">Gate operation summary for the current week.</p>
+        </div>
+        <div class="flex gap-8">
+          <button class="btn btn-outline" onclick="cxExportCsv()">Export CSV</button>
+          <button class="btn btn-dark" onclick="window.print()">Export PDF</button>
+        </div>
+      </div>
+
+      <div class="stat-grid" style="grid-template-columns:repeat(4,1fr);">
+        <div class="stat-card"><div class="label">Total Exits (7d)</div><div class="value" id="r-exits">742</div></div>
+        <div class="stat-card"><div class="label">Total Entries (7d)</div><div class="value" id="r-entries">718</div></div>
+        <div class="stat-card tone-orange"><div class="label">Avg Outside Duration</div><div class="value orange" id="r-avg">2h 14m</div></div>
+        <div class="stat-card tone-red"><div class="label">Overdue Cases (7d)</div><div class="value red" id="r-overdue">9</div></div>
+      </div>
+      <div class="stat-grid" style="grid-template-columns:repeat(3,1fr);">
+        <div class="stat-card"><div class="label">Visitor Count (7d)</div><div class="value" id="r-visitors">31</div></div>
+        <div class="stat-card"><div class="label">Manual Overrides (7d)</div><div class="value" id="r-overrides">2</div></div>
+        <div class="stat-card"><div class="label">Verification Failures (7d)</div><div class="value" id="r-fail">4</div></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="section">
+          <div class="card card-pad">
+            <div class="card-head" style="padding:0 0 12px; border:none;"><h3>Daily entry / exit</h3></div>
+            <div class="bar-chart" id="chart-daily"></div>
+            <div class="text-sm text-muted mt-8"><span class="legend-dot" style="background:var(--orange);"></span>Exits &nbsp; <span class="legend-dot" style="background:var(--black);"></span>Entries</div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="card card-pad">
+            <div class="card-head" style="padding:0 0 12px; border:none;"><h3>Overdue trend</h3></div>
+            <div class="bar-chart" id="chart-overdue"></div>
+            <div class="text-sm text-muted mt-8"><span class="legend-dot" style="background:var(--red);"></span>Overdue cases per day</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="section">
+          <div class="card card-pad">
+            <div class="card-head" style="padding:0 0 12px; border:none;"><h3>Visitor activity</h3></div>
+            <div class="bar-chart" id="chart-visitors"></div>
+            <div class="text-sm text-muted mt-8"><span class="legend-dot" style="background:var(--green);"></span>Visitors per day</div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="card card-pad">
+            <div class="card-head" style="padding:0 0 12px; border:none;"><h3>Verification methods used</h3></div>
+            <div id="chart-methods" style="display:flex; flex-direction:column; gap:12px; padding-top:6px;"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/main.js"></script>
+<script>
+const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+function cxBarChart(elId, seriesA, seriesB){
+  const max = Math.max(...seriesA, ...(seriesB || [0]));
+  const el = document.getElementById(elId);
+  el.innerHTML = DAYS.map((d,i) => `
+    <div class="col">
+      <div style="display:flex; align-items:flex-end; gap:3px; height:130px;">
+        <div class="bar" style="height:${Math.round(seriesA[i]/max*130)}px;" title="${seriesA[i]}"></div>
+        ${seriesB ? `<div class="bar alt" style="height:${Math.round(seriesB[i]/max*130)}px;" title="${seriesB[i]}"></div>` : ''}
+      </div>
+      <div class="lbl">${d}</div>
+    </div>`).join('');
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  cxBarChart('chart-daily', [98,110,102,120,108,140,64], [92,105,99,115,101,132,74]);
+  cxBarChart('chart-overdue', [1,2,0,3,1,2,0]);
+  document.querySelectorAll('#chart-overdue .bar').forEach(b => b.style.background = 'var(--red)');
+  cxBarChart('chart-visitors', [3,5,4,6,5,8,0]);
+  document.querySelectorAll('#chart-visitors .bar').forEach(b => b.style.background = 'var(--green)');
+
+  const methods = [
+    { label:'QR Scan', pct:62, color:'var(--orange)' },
+    { label:'ID Card', pct:24, color:'var(--black)' },
+    { label:'Manual / Phone Confirmation', pct:14, color:'var(--gray-muted)' }
+  ];
+  document.getElementById('chart-methods').innerHTML = methods.map(m => `
+    <div>
+      <div class="flex justify-between text-sm" style="margin-bottom:5px;"><strong>${m.label}</strong><span class="text-muted">${m.pct}%</span></div>
+      <div style="height:8px; background:#F0F0F0; border-radius:99px; overflow:hidden;">
+        <div style="height:100%; width:${m.pct}%; background:${m.color}; border-radius:99px;"></div>
+      </div>
+    </div>`).join('');
+});
+
+function cxExportCsv(){
+  const rows = [
+    ['Metric','Value'],
+    ['Total Exits (7d)','742'], ['Total Entries (7d)','718'],
+    ['Average Outside Duration','2h 14m'], ['Overdue Cases (7d)','9'],
+    ['Visitor Count (7d)','31'], ['Manual Overrides (7d)','2'], ['Verification Failures (7d)','4']
+  ];
+  const csv = rows.map(r => r.join(',')).join('\n');
+  const blob = new Blob([csv], { type:'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'campusx-weekly-report.csv'; a.click();
+  URL.revokeObjectURL(url);
+  CxData.addAudit('Report exported', 'Weekly analytics report exported to CSV.');
+  cxToast('Report exported.', 'success');
+}
+</script>
+</body>
+</html>

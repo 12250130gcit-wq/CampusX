@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manual Entry / Exit · CampusX GCIT</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<link rel="stylesheet" href="css/style.css">
+<script src="../assets/auth.js"></script>
+<script src="../assets/store.js"></script>
+<script>var cxSession = CXAuth.requireRole("gatekeeper");</script>
+</head>
+<body data-depth="1">
+<script>window.CX_PAGE='manual-record'; window.CX_TITLE='Manual Entry / Exit';</script>
+
+<div class="app-shell">
+  <aside class="sidebar"><div id="sidebar-root"></div></aside>
+  <div id="backdrop-root"></div>
+
+  <div class="main-col">
+    <header class="topbar" id="topbar-root"></header>
+
+    <main class="page">
+      <div class="page-head">
+        <div>
+          <h2>Manual Entry / Exit Record</h2>
+          <p class="desc">Use this only when the scanner or ID cannot be read, in emergencies, or for authorized corrections.</p>
+        </div>
+      </div>
+
+      <div class="alert-banner" style="background:var(--orange-light); border-color:#F6D9B0;">
+        <div class="icon" style="background:var(--orange);" data-icon="clock_alert"></div>
+        <div><h4 style="color:var(--orange-dark);">Manual records are logged for security auditing</h4>
+        <p style="color:var(--orange-dark);">Every field below is written to the audit trail with your admin ID and timestamp.</p></div>
+      </div>
+
+      <div class="card card-pad mt-16">
+        <form id="manual-form">
+          <div class="form-grid">
+            <div class="field field-full">
+              <label for="m-student">Student name *</label>
+              <input type="text" id="m-student" required placeholder="e.g. Karma Dorji">
+            </div>
+            <div class="field">
+              <label for="m-id">Student ID *</label>
+              <input type="text" id="m-id" required placeholder="e.g. 12250001">
+            </div>
+            <div class="field">
+              <label for="m-type">Entry or exit *</label>
+              <select id="m-type" required>
+                <option value="ENTRY">Entry (returning)</option>
+                <option value="EXIT">Exit (leaving)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="m-date">Date *</label>
+              <input type="date" id="m-date" required>
+            </div>
+            <div class="field">
+              <label for="m-time">Time *</label>
+              <input type="time" id="m-time" required>
+            </div>
+            <div class="field">
+              <label for="m-method">Verification method</label>
+              <select id="m-method">
+                <option>ID Card (visual check)</option>
+                <option>Phone confirmation with Warden</option>
+                <option>Known by sight</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="m-admin">Recording admin</label>
+              <input type="text" id="m-admin" value="Sonam T. (Gatekeeper)" disabled>
+            </div>
+            <div class="field field-full">
+              <label for="m-reason">Reason for manual record *</label>
+              <textarea id="m-reason" rows="3" required placeholder="e.g. QR scanner offline, verified manually against ID card and warden call…"></textarea>
+            </div>
+          </div>
+          <label class="flex items-center gap-8 mt-16 text-sm">
+            <input type="checkbox" id="m-confirm" required> I confirm the details above are accurate and understand this is logged for audit.
+          </label>
+          <div class="flex gap-8 mt-16">
+            <button type="submit" class="btn btn-primary">Save Record</button>
+            <button type="reset" class="btn btn-outline">Clear</button>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div id="toast-stack"></div>
+
+<script src="js/data.js"></script>
+<script src="js/main.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const dateInput = document.getElementById('m-date');
+  const timeInput = document.getElementById('m-time');
+  const now = new Date();
+  dateInput.value = now.toISOString().slice(0,10);
+  timeInput.value = now.toTimeString().slice(0,5);
+
+  document.getElementById('manual-form').addEventListener('submit', function(e){
+    e.preventDefault();
+    if(!document.getElementById('m-confirm').checked){
+      cxToast('Please confirm the record before saving.', 'error');
+      return;
+    }
+    const data = {
+      name: document.getElementById('m-student').value.trim(),
+      studentId: document.getElementById('m-id').value.trim(),
+      type: document.getElementById('m-type').value,
+      time: new Date('1970-01-01T' + timeInput.value).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }),
+      method: document.getElementById('m-method').value,
+      reason: document.getElementById('m-reason').value.trim()
+    };
+    if(!data.name || !data.studentId || !data.reason){
+      cxToast('Please fill in all required fields.', 'error');
+      return;
+    }
+    CxData.addManualRecord(data);
+    cxToast('Manual record saved and logged for audit.', 'success');
+    document.getElementById('manual-form').reset();
+    dateInput.value = now.toISOString().slice(0,10);
+    timeInput.value = now.toTimeString().slice(0,5);
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard · CampusX GCIT</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<link rel="stylesheet" href="css/style.css">
+<script src="../assets/auth.js"></script>
+<script src="../assets/store.js"></script>
+<script>var cxSession = CXAuth.requireRole("gatekeeper");</script>
+</head>
+<body data-depth="1">
+<script>
+  window.CX_PAGE='dashboard'; window.CX_TITLE='Gate Dashboard';
+  document.addEventListener('DOMContentLoaded', ()=>{
+    const g = document.getElementById('gateGreeting');
+    if(g && window.cxSession){
+      const h = new Date().getHours();
+      const part = h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening';
+      g.textContent = 'Good ' + part + ', ' + window.cxSession.name.split(' ')[0];
+    }
+  });
+</script>
+
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar-wrap"><div id="sidebar-root"></div></aside>
+  <div id="backdrop-root"></div>
+
+  <div class="main-col">
+    <header class="topbar" id="topbar-root"></header>
+
+    <main class="page">
+      <div class="page-head">
+        <div>
+          <h2 id="gateGreeting">Good afternoon, Sonam</h2>
+          <p class="desc">Main Gate · Shift 8:00 AM – 4:00 PM &nbsp;·&nbsp; Here's what's happening on campus right now.</p>
+        </div>
+        <a href="verification.html" class="btn btn-primary"><span class="icon-slot" data-icon="scan"></span>Scan Student ID</a>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="label">Students Outside</div>
+          <div class="value" id="stat-outside">–</div>
+          <div class="sub">Currently off campus</div>
+        </div>
+        <div class="stat-card tone-orange">
+          <div class="label">Expected Back</div>
+          <div class="value orange" id="stat-expected">–</div>
+          <div class="sub">Within their approved window</div>
+        </div>
+        <div class="stat-card tone-red">
+          <div class="label">Overdue</div>
+          <div class="value red" id="stat-overdue">–</div>
+          <div class="sub">Past expected return time</div>
+        </div>
+        <div class="stat-card tone-green">
+          <div class="label">Visitors Inside</div>
+          <div class="value green" id="stat-visitors">–</div>
+          <div class="sub">On campus right now</div>
+        </div>
+      </div>
+
+      <div class="stat-grid" style="grid-template-columns:repeat(4,1fr);">
+        <div class="stat-card">
+          <div class="label">Returned Today</div>
+          <div class="value" id="stat-returned">–</div>
+          <div class="sub">Students back on campus</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Entries Today</div>
+          <div class="value" id="stat-entries">126</div>
+          <div class="sub">All entry events, Main Gate</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Exits Today</div>
+          <div class="value" id="stat-exits">108</div>
+          <div class="sub">All exit events, Main Gate</div>
+        </div>
+        <div class="stat-card tone-orange">
+          <div class="label">Needs Attention</div>
+          <div class="value orange" id="stat-attention">–</div>
+          <div class="sub">Overdue + pending verifications</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title-row"><h3>Quick actions</h3></div>
+        <div class="quick-actions">
+          <a href="verification.html" class="qa-btn primary">
+            <div class="qa-icon" data-icon="scan"></div>
+            <span class="qa-label">Scan Student ID</span>
+          </a>
+          <a href="verification.html?mode=entry" class="qa-btn">
+            <div class="qa-icon" data-icon="log_in"></div>
+            <span class="qa-label">Record Entry</span>
+          </a>
+          <a href="verification.html?mode=exit" class="qa-btn">
+            <div class="qa-icon" data-icon="log_out"></div>
+            <span class="qa-label">Record Exit</span>
+          </a>
+          <a href="visitor-register.html" class="qa-btn">
+            <div class="qa-icon" data-icon="user_plus"></div>
+            <span class="qa-label">Register Visitor</span>
+          </a>
+          <a href="visitors.html" class="qa-btn">
+            <div class="qa-icon" data-icon="users"></div>
+            <span class="qa-label">Visitor Check-Out</span>
+          </a>
+          <a href="students.html" class="qa-btn">
+            <div class="qa-icon" data-icon="search"></div>
+            <span class="qa-label">Search Student</span>
+          </a>
+          <a href="leave-lookup.html" class="qa-btn">
+            <div class="qa-icon" data-icon="check_shield"></div>
+            <span class="qa-label">Leave Lookup</span>
+          </a>
+          <a href="manual-record.html" class="qa-btn">
+            <div class="qa-icon" data-icon="list"></div>
+            <span class="qa-label">Manual Record</span>
+          </a>
+        </div>
+      </div>
+
+      <div id="attention-section" class="section"></div>
+
+      <div class="grid-2">
+        <div class="section">
+          <div class="section-title-row">
+            <h3>Live campus movement</h3>
+            <a href="movement-logs.html" class="text-sm" style="color:var(--orange-dark); font-weight:700;">View full log →</a>
+          </div>
+          <div class="card">
+            <div id="movement-list"></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title-row"><h3>Recent activity — all requests</h3></div>
+          <div class="card card-pad">
+            <div id="activity-list" style="display:flex; flex-direction:column; gap:14px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title-row">
+          <h3>Live student leave requests</h3>
+          <a href="leave-lookup.html" class="text-sm" style="color:var(--orange-dark); font-weight:700;">Leave lookup →</a>
+        </div>
+        <div class="card">
+          <div id="pending-leave-list"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div id="toast-stack"></div>
+
+<script src="js/data.js"></script>
+<script src="js/main.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>

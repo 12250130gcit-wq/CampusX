@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Visitors · CampusX GCIT</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<link rel="stylesheet" href="css/style.css">
+<script src="../assets/auth.js"></script>
+<script src="../assets/store.js"></script>
+<script>var cxSession = CXAuth.requireRole("gatekeeper");</script>
+</head>
+<body data-depth="1">
+<script>window.CX_PAGE='visitors'; window.CX_TITLE='Visitor Management';</script>
+
+<div class="app-shell">
+  <aside class="sidebar"><div id="sidebar-root"></div></aside>
+  <div id="backdrop-root"></div>
+
+  <div class="main-col">
+    <header class="topbar" id="topbar-root"></header>
+
+    <main class="page">
+      <div class="page-head">
+        <div>
+          <h2>Visitor Management</h2>
+          <p class="desc">Everyone currently on campus as a visitor, plus recent check-outs.</p>
+        </div>
+        <a href="visitor-register.html" class="btn btn-primary"><span data-icon="user_plus"></span>Register Visitor</a>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card tone-green">
+          <div class="label">Visitors Inside</div>
+          <div class="value green" id="stat-inside">–</div>
+        </div>
+        <div class="stat-card tone-orange">
+          <div class="label">Expected Today</div>
+          <div class="value orange" id="stat-expected">–</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Checked Out Today</div>
+          <div class="value" id="stat-out">–</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Pending Verification</div>
+          <div class="value" id="stat-pending">0</div>
+        </div>
+      </div>
+
+      <div class="section" id="section-inside">
+        <div class="section-title-row"><h3>Currently inside</h3></div>
+        <div id="inside-grid" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px;"></div>
+      </div>
+
+      <div class="section" id="history">
+        <div class="section-title-row"><h3>Visitor history</h3></div>
+        <div class="card">
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Visitor</th><th>Relationship</th><th>Visiting</th><th>Check-in</th><th>Check-out</th><th>Status</th></tr></thead>
+              <tbody id="history-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div id="toast-stack"></div>
+
+<script src="js/data.js"></script>
+<script src="js/main.js"></script>
+<script>
+function cxRenderVisitors(){
+  const visitors = CxData.getVisitors();
+  const inside = visitors.filter(v => v.status === 'inside');
+  const out = visitors.filter(v => v.status === 'checked_out');
+
+  document.getElementById('stat-inside').textContent = inside.length;
+  document.getElementById('stat-expected').textContent = visitors.length;
+  document.getElementById('stat-out').textContent = out.length;
+
+  const grid = document.getElementById('inside-grid');
+  grid.innerHTML = inside.length === 0
+    ? `<div class="card empty-state"><div class="t">No visitors on campus</div></div>`
+    : inside.map(v => `
+      <div class="card card-pad">
+        <div class="flex items-center gap-12">
+          <div class="person-avatar">${v.name.split(' ').map(p=>p[0]).join('').slice(0,2)}</div>
+          <div style="flex:1;">
+            <div style="font-weight:800; font-size:14px;">${v.name}</div>
+            <div class="text-muted text-sm">${v.relationship}</div>
+          </div>
+          <span class="badge badge-inside">Inside</span>
+        </div>
+        <div class="kv-grid" style="margin-top:14px; grid-template-columns:1fr 1fr;">
+          <div class="kv"><div class="k">Visiting</div><div class="v">${v.visiting}</div></div>
+          <div class="kv"><div class="k">Student ID</div><div class="v mono">${v.visitingId}</div></div>
+          <div class="kv"><div class="k">Check-in</div><div class="v mono">${v.checkIn}</div></div>
+          <div class="kv"><div class="k">Expected Out</div><div class="v mono">${v.expectedOut}</div></div>
+        </div>
+        <div class="flex gap-8 mt-16">
+          <button class="btn btn-success btn-sm" onclick="cxCheckOut('${v.id}')"><span data-icon="check"></span>Check Out</button>
+          <button class="btn btn-outline btn-sm" onclick="alert('Calling ${v.name} at ${v.contact}…')"><span data-icon="phone"></span></button>
+        </div>
+      </div>`).join('');
+
+  document.getElementById('history-tbody').innerHTML = visitors.map(v => `
+    <tr>
+      <td><strong>${v.name}</strong><div class="text-muted" style="font-size:11px;">#${v.id}</div></td>
+      <td>${v.relationship}</td>
+      <td>${v.visiting}</td>
+      <td class="mono">${v.checkIn}</td>
+      <td class="mono">${v.checkOut || '—'}</td>
+      <td>${v.status === 'inside' ? '<span class="badge badge-inside">Inside</span>' : '<span class="badge badge-neutral">Checked Out</span>'}</td>
+    </tr>`).join('');
+
+  cxFillIcons();
+}
+
+function cxCheckOut(id){
+  CxData.checkOutVisitor(id);
+  cxToast('Visitor checked out.', 'success');
+  cxRenderVisitors();
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  cxRenderVisitors();
+  if(location.hash === '#history'){
+    setTimeout(() => document.getElementById('history').scrollIntoView({ behavior:'smooth' }), 200);
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register Visitor · CampusX GCIT</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<link rel="stylesheet" href="css/style.css">
+<script src="../assets/auth.js"></script>
+<script src="../assets/store.js"></script>
+<script>var cxSession = CXAuth.requireRole("gatekeeper");</script>
+</head>
+<body data-depth="1">
+<script>window.CX_PAGE='visitor-register'; window.CX_TITLE='Register Visitor';</script>
+
+<div class="app-shell">
+  <aside class="sidebar"><div id="sidebar-root"></div></aside>
+  <div id="backdrop-root"></div>
+
+  <div class="main-col">
+    <header class="topbar" id="topbar-root"></header>
+
+    <main class="page">
+      <div class="page-head">
+        <div>
+          <h2>Register Visitor</h2>
+          <p class="desc">Record a new visitor before they enter campus. A visitor pass is generated on submission.</p>
+        </div>
+      </div>
+
+      <div class="grid-2" style="align-items:flex-start;">
+        <div class="card card-pad">
+          <form id="visitor-form">
+            <div class="form-grid">
+              <div class="field field-full">
+                <label for="v-name">Visitor full name *</label>
+                <input type="text" id="v-name" required placeholder="e.g. Pema Dorji">
+              </div>
+              <div class="field">
+                <label for="v-contact">Contact number *</label>
+                <input type="tel" id="v-contact" required placeholder="17XXXXXX">
+              </div>
+              <div class="field">
+                <label for="v-cid">CID / ID number *</label>
+                <input type="text" id="v-cid" required placeholder="11XXXXXXXXXX">
+              </div>
+              <div class="field">
+                <label for="v-visiting">Person visiting (student name) *</label>
+                <input type="text" id="v-visiting" required placeholder="e.g. Karma Dorji">
+              </div>
+              <div class="field">
+                <label for="v-visiting-id">Student ID</label>
+                <input type="text" id="v-visiting-id" placeholder="e.g. 12250001">
+              </div>
+              <div class="field">
+                <label for="v-relationship">Relationship *</label>
+                <select id="v-relationship" required>
+                  <option value="">Select…</option>
+                  <option>Parent</option><option>Guardian</option><option>Sibling</option>
+                  <option>Relative</option><option>Friend</option><option>Vendor</option><option>Other</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="v-duration">Expected duration</label>
+                <select id="v-duration">
+                  <option>30 minutes</option><option selected>1 hour</option><option>2 hours</option><option>Half day</option><option>Full day</option>
+                </select>
+              </div>
+              <div class="field field-full">
+                <label for="v-purpose">Purpose of visit *</label>
+                <textarea id="v-purpose" rows="2" required placeholder="e.g. Family visit, dropping off documents…"></textarea>
+              </div>
+            </div>
+            <div class="flex gap-8 mt-16">
+              <button type="submit" class="btn btn-primary"><span data-icon="user_plus"></span>Register Visitor</button>
+              <button type="reset" class="btn btn-outline">Clear</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="section">
+          <div class="card empty-state" id="pass-empty">
+            <span data-icon="id_card" style="width:34px;height:34px; display:inline-flex; margin-bottom:8px; opacity:.4;"></span>
+            <div class="t">No visitor registered yet</div>
+            <div class="d">Submit the form to generate a visitor pass.</div>
+          </div>
+          <div class="card card-pad hidden" id="pass-card" style="border-top:4px solid var(--orange);">
+            <div class="flex justify-between items-center">
+              <h3 style="font-size:15px;">Visitor Pass</h3>
+              <span class="badge badge-inside">Active</span>
+            </div>
+            <div class="student-id-card mt-16">
+              <div class="photo" id="pass-initials">–</div>
+              <div>
+                <div class="name" id="pass-name">—</div>
+                <div class="meta" id="pass-relationship">—</div>
+              </div>
+            </div>
+            <div class="kv-grid">
+              <div class="kv"><div class="k">Visitor ID</div><div class="v mono" id="pass-id">—</div></div>
+              <div class="kv"><div class="k">Check-in</div><div class="v mono" id="pass-checkin">—</div></div>
+              <div class="kv"><div class="k">Visiting</div><div class="v" id="pass-visiting">—</div></div>
+              <div class="kv"><div class="k">Expected Out</div><div class="v" id="pass-duration">—</div></div>
+            </div>
+            <p class="text-sm text-muted mt-16">Hand this pass number to the visitor. Recorded in the audit log and visible under Visitors Inside.</p>
+            <a href="visitors.html" class="btn btn-dark btn-block mt-12">Go to Visitors Inside</a>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div id="toast-stack"></div>
+
+<script src="js/data.js"></script>
+<script src="js/main.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  document.getElementById('visitor-form').addEventListener('submit', function(e){
+    e.preventDefault();
+    const data = {
+      name: document.getElementById('v-name').value.trim(),
+      contact: document.getElementById('v-contact').value.trim(),
+      cid: document.getElementById('v-cid').value.trim(),
+      visiting: document.getElementById('v-visiting').value.trim(),
+      visitingId: document.getElementById('v-visiting-id').value.trim() || '—',
+      relationship: document.getElementById('v-relationship').value,
+      expectedOut: document.getElementById('v-duration').value,
+      purpose: document.getElementById('v-purpose').value.trim()
+    };
+    if(!data.name || !data.contact || !data.cid || !data.visiting || !data.relationship || !data.purpose){
+      cxToast('Please fill in all required fields.', 'error');
+      return;
+    }
+    const record = CxData.registerVisitor(data);
+    document.getElementById('pass-empty').classList.add('hidden');
+    const card = document.getElementById('pass-card');
+    card.classList.remove('hidden');
+    document.getElementById('pass-initials').textContent = record.name.split(' ').map(p=>p[0]).join('').slice(0,2);
+    document.getElementById('pass-name').textContent = record.name;
+    document.getElementById('pass-relationship').textContent = record.relationship;
+    document.getElementById('pass-id').textContent = record.id;
+    document.getElementById('pass-checkin').textContent = record.checkIn;
+    document.getElementById('pass-visiting').textContent = `${record.visiting} (#${record.visitingId})`;
+    document.getElementById('pass-duration').textContent = record.expectedOut;
+    cxToast('Visitor registered successfully.', 'success');
+    document.getElementById('visitor-form').reset();
+  });
+  cxFillIcons();
+});
+</script>
+</body>
+</html>

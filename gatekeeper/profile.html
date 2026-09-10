@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profile · CampusX GCIT</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<link rel="stylesheet" href="css/style.css">
+<script src="../assets/auth.js"></script>
+<script src="../assets/store.js"></script>
+<script>var cxSession = CXAuth.requireRole("gatekeeper");</script>
+</head>
+<body data-depth="1">
+<script>window.CX_PAGE='profile'; window.CX_TITLE='Admin Profile';</script>
+
+<div class="app-shell">
+  <aside class="sidebar"><div id="sidebar-root"></div></aside>
+  <div id="backdrop-root"></div>
+
+  <div class="main-col">
+    <header class="topbar" id="topbar-root"></header>
+
+    <main class="page">
+      <div class="page-head"><div><h2>Admin Profile</h2><p class="desc">Your gatekeeper account details and recent security actions.</p></div></div>
+
+      <div class="grid-2" style="align-items:flex-start;">
+        <div class="card card-pad">
+          <div class="flex items-center gap-12">
+            <div class="person-avatar" id="profileAvatar" style="width:64px;height:64px;font-size:20px; background:var(--orange-light); color:var(--orange-dark);">ST</div>
+            <div>
+              <div style="font-weight:800; font-size:17px;" id="profileName">Sonam Tshering</div>
+              <div class="text-muted text-sm">Campus Security Administrator</div>
+            </div>
+          </div>
+          <div class="kv-grid" style="margin-top:20px;">
+            <div class="kv"><div class="k">Staff ID</div><div class="v mono" id="profileId">GK-001</div></div>
+            <div class="kv"><div class="k">Role</div><div class="v">Admin / Gatekeeper</div></div>
+            <div class="kv"><div class="k">Assigned Gate</div><div class="v">Main Gate</div></div>
+            <div class="kv"><div class="k">Current Shift</div><div class="v mono">8:00 AM – 4:00 PM</div></div>
+            <div class="kv"><div class="k">Last Login</div><div class="v mono" id="profileLastLogin">This session</div></div>
+            <div class="kv"><div class="k">Last Verification</div><div class="v mono">Today, 5:40 PM</div></div>
+          </div>
+          <button class="btn btn-outline btn-block mt-16" id="editProfileBtn">Edit Profile</button>
+          <button class="btn btn-danger btn-block mt-16" id="profileLogoutBtn">Log Out</button>
+        </div>
+
+        <div class="section">
+          <div class="section-title-row"><h3>Recent actions</h3></div>
+          <div class="card">
+            <div id="audit-list"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/main.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  if(cxSession){
+    document.getElementById('profileName').textContent = cxSession.name;
+    document.getElementById('profileId').textContent = cxSession.id;
+    document.getElementById('profileAvatar').textContent = cxSession.name.split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase();
+    if(cxSession.loginAt){
+      document.getElementById('profileLastLogin').textContent = new Date(cxSession.loginAt).toLocaleString([], { hour:'2-digit', minute:'2-digit', month:'short', day:'numeric' });
+    }
+  }
+  document.getElementById('editProfileBtn').addEventListener('click', function(){
+    const name = prompt('Update display name', cxSession ? cxSession.name : '');
+    if(name && name.trim()){
+      document.getElementById('profileName').textContent = name.trim();
+      document.getElementById('profileAvatar').textContent = name.trim().split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase();
+      cxToast('Profile updated successfully.');
+    }
+  });
+  document.getElementById('profileLogoutBtn').addEventListener('click', function(){
+    if(confirm('Log out of CampusX?')) CXAuth.logout();
+  });
+  const audit = CxData.getAudit();
+  const el = document.getElementById('audit-list');
+  el.innerHTML = audit.length === 0
+    ? `<div class="empty-state"><div class="t">No actions recorded yet this session</div><div class="d">Actions like exits, overrides, and visitor check-outs will appear here.</div></div>`
+    : audit.slice(0, 25).map(a => `
+      <div class="movement-row">
+        <div class="movement-info">
+          <div class="name">${a.action}</div>
+          <div class="meta">${a.detail}</div>
+        </div>
+        <div class="movement-time"><span class="t">${a.time}</span>${a.date}</div>
+      </div>`).join('');
+});
+</script>
+</body>
+</html>

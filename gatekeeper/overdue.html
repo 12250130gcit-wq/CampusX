@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Overdue Students · CampusX GCIT</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<link rel="stylesheet" href="css/style.css">
+<script src="../assets/auth.js"></script>
+<script src="../assets/store.js"></script>
+<script>var cxSession = CXAuth.requireRole("gatekeeper");</script>
+</head>
+<body data-depth="1">
+<script>window.CX_PAGE='overdue'; window.CX_TITLE='Overdue Students';</script>
+
+<div class="app-shell">
+  <aside class="sidebar"><div id="sidebar-root"></div></aside>
+  <div id="backdrop-root"></div>
+
+  <div class="main-col">
+    <header class="topbar" id="topbar-root"></header>
+
+    <main class="page">
+      <div class="page-head">
+        <div>
+          <h2>Overdue Students</h2>
+          <p class="desc" id="overdue-count">Loading…</p>
+        </div>
+      </div>
+
+      <div class="alert-banner mt-16" style="margin-bottom:20px;" id="overdue-banner"></div>
+
+      <div id="overdue-grid" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px;"></div>
+    </main>
+  </div>
+</div>
+
+<!-- Follow-up modal -->
+<div class="modal-overlay" id="followup-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Record Follow-Up</h3>
+      <button class="modal-close" onclick="cxCloseModal('followup-modal')"><span data-icon="x"></span></button>
+    </div>
+    <div class="modal-body">
+      <p class="text-sm text-muted" id="followup-name"></p>
+      <div class="field mt-12">
+        <label>Follow-up note</label>
+        <textarea id="followup-note" rows="3" placeholder="e.g. Called guardian, student confirmed en route, ETA 20 min…"></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="cxCloseModal('followup-modal')">Cancel</button>
+      <button class="btn btn-dark" id="followup-save-btn">Save Follow-Up</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-stack"></div>
+
+<script src="js/data.js"></script>
+<script src="js/main.js"></script>
+<script>
+let cxFollowupId = null;
+
+function cxRenderOverdue(){
+  const list = CxData.getStudents().filter(s => s.status === 'overdue');
+  document.getElementById('overdue-count').textContent = `${list.length} student${list.length === 1 ? '' : 's'} currently overdue — contact guardians and follow up immediately.`;
+
+  const banner = document.getElementById('overdue-banner');
+  banner.innerHTML = `
+    <div class="icon" data-icon="clock_alert"></div>
+    <div><h4>${list.length} student${list.length === 1 ? '' : 's'} overdue</h4>
+    <p>These students have passed their approved return time and have not yet checked back in at the gate.</p></div>`;
+
+  const grid = document.getElementById('overdue-grid');
+  if(list.length === 0){
+    grid.innerHTML = `<div class="card empty-state"><div class="t">No overdue students</div><div class="d">Everyone with approved leave is within their expected window.</div></div>`;
+  } else {
+    grid.innerHTML = list.map(s => `
+      <div class="card card-pad" style="border-left:4px solid var(--red);">
+        <div class="flex items-center gap-12">
+          <div class="person-avatar" style="background:var(--red-light); color:var(--red);">${s.initials}</div>
+          <div style="flex:1;">
+            <div style="font-weight:800; font-size:14.5px;">${s.name}</div>
+            <div class="text-muted text-sm">#${s.id} · ${s.hostel}</div>
+          </div>
+          <span class="badge badge-overdue">Overdue</span>
+        </div>
+        <div class="kv-grid" style="margin-top:14px; grid-template-columns:1fr 1fr;">
+          <div class="kv"><div class="k">Destination</div><div class="v">${s.destination}</div></div>
+          <div class="kv"><div class="k">Expected</div><div class="v mono">${s.expectedReturn}</div></div>
+          <div class="kv"><div class="k">Contact</div><div class="v mono">${s.contact}</div></div>
+          <div class="kv"><div class="k">Program</div><div class="v">${s.program}</div></div>
+        </div>
+        <div class="flex gap-8 mt-16">
+          <button class="btn btn-danger btn-sm" onclick="alert('Calling ${s.name} at ${s.contact}…')"><span data-icon="phone"></span>Call</button>
+          <button class="btn btn-outline btn-sm" onclick="location.href='students.html?id=${s.id}'">View Details</button>
+          <button class="btn btn-dark btn-sm" onclick="cxOpenFollowup('${s.id}','${s.name}')">Follow-Up</button>
+        </div>
+      </div>
+    `).join('');
+  }
+  cxFillIcons();
+}
+
+function cxOpenFollowup(id, name){
+  cxFollowupId = id;
+  document.getElementById('followup-name').textContent = `Logging a follow-up for ${name} (#${id}).`;
+  document.getElementById('followup-note').value = '';
+  cxOpenModal('followup-modal');
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  cxRenderOverdue();
+  document.getElementById('followup-save-btn').addEventListener('click', function(){
+    const note = document.getElementById('followup-note').value.trim();
+    if(!note){ cxToast('Please add a follow-up note.', 'error'); return; }
+    CxData.addAudit('Follow-up recorded', `Overdue follow-up for ${cxFollowupId}: ${note}`);
+    cxToast('Follow-up saved to audit log.', 'success');
+    cxCloseModal('followup-modal');
+  });
+});
+</script>
+</body>
+</html>

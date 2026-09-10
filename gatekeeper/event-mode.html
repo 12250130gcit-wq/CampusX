@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Event Mode · CampusX GCIT</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<link rel="stylesheet" href="css/style.css">
+<script src="../assets/auth.js"></script>
+<script src="../assets/store.js"></script>
+<script>var cxSession = CXAuth.requireRole("gatekeeper");</script>
+</head>
+<body data-depth="1">
+<script>window.CX_PAGE='event-mode'; window.CX_TITLE='Event / Special Access Mode';</script>
+
+<div class="app-shell">
+  <aside class="sidebar"><div id="sidebar-root"></div></aside>
+  <div id="backdrop-root"></div>
+
+  <div class="main-col">
+    <header class="topbar" id="topbar-root"></header>
+
+    <main class="page">
+      <div class="page-head">
+        <div>
+          <h2>Event / Special Access Mode</h2>
+          <p class="desc">Configure temporary access rules for campus events like fests, orientation, or exams.</p>
+        </div>
+      </div>
+
+      <div id="event-status-banner" class="card card-pad mt-16" style="margin-bottom:20px;"></div>
+
+      <div class="card card-pad">
+        <div class="form-grid">
+          <div class="field field-full">
+            <label for="e-name">Event name</label>
+            <input type="text" id="e-name" placeholder="e.g. GCIT Tech Fest 2026">
+          </div>
+          <div class="field"><label for="e-start-date">Start date</label><input type="date" id="e-start-date"></div>
+          <div class="field"><label for="e-end-date">End date</label><input type="date" id="e-end-date"></div>
+          <div class="field"><label for="e-start-time">Start time</label><input type="time" id="e-start-time"></div>
+          <div class="field"><label for="e-end-time">End time</label><input type="time" id="e-end-time"></div>
+        </div>
+
+        <div class="field mt-16">
+          <label>Allowed groups during event</label>
+          <div class="flex gap-12 mt-8">
+            <label class="flex items-center gap-8 text-sm"><input type="checkbox" id="e-students"> Students</label>
+            <label class="flex items-center gap-8 text-sm"><input type="checkbox" id="e-staff"> Staff</label>
+            <label class="flex items-center gap-8 text-sm"><input type="checkbox" id="e-visitors"> Visitors</label>
+          </div>
+          <p class="hint mt-8">During event mode, allowed groups may enter/exit under relaxed gate rules configured here — students' individual leave approvals are still verified.</p>
+        </div>
+
+        <div class="flex gap-8 mt-16">
+          <button class="btn btn-success" id="activate-btn">Activate Event Mode</button>
+          <button class="btn btn-outline" id="deactivate-btn">Deactivate</button>
+          <button class="btn btn-dark" id="save-btn">Save Settings</button>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div id="toast-stack"></div>
+
+<script src="js/data.js"></script>
+<script src="js/main.js"></script>
+<script>
+function cxRenderEventBanner(ev){
+  const banner = document.getElementById('event-status-banner');
+  if(ev.active){
+    banner.style.borderLeft = '4px solid var(--green)';
+    banner.innerHTML = `
+      <div class="flex items-center gap-12">
+        <span class="badge badge-approved" style="font-size:13px; padding:6px 12px;">EVENT MODE ACTIVE</span>
+        <div><strong>${ev.name || 'Untitled Event'}</strong>
+        <div class="text-muted text-sm">${ev.startDate || '—'} ${ev.startTime} → ${ev.endDate || '—'} ${ev.endTime}</div></div>
+      </div>`;
+  } else {
+    banner.style.borderLeft = '4px solid var(--gray-muted)';
+    banner.innerHTML = `<div class="flex items-center gap-12"><span class="badge badge-neutral" style="font-size:13px; padding:6px 12px;">EVENT MODE INACTIVE</span><span class="text-muted text-sm">Standard gate rules are in effect.</span></div>`;
+  }
+}
+
+function cxLoadEventForm(){
+  const ev = CxData.getEvent();
+  document.getElementById('e-name').value = ev.name || '';
+  document.getElementById('e-start-date').value = ev.startDate || '';
+  document.getElementById('e-end-date').value = ev.endDate || '';
+  document.getElementById('e-start-time').value = ev.startTime || '08:00';
+  document.getElementById('e-end-time').value = ev.endTime || '18:00';
+  document.getElementById('e-students').checked = !!(ev.allow && ev.allow.students);
+  document.getElementById('e-staff').checked = !!(ev.allow && ev.allow.staff);
+  document.getElementById('e-visitors').checked = !!(ev.allow && ev.allow.visitors);
+  cxRenderEventBanner(ev);
+}
+
+function cxCollectEventForm(){
+  return {
+    name: document.getElementById('e-name').value.trim(),
+    startDate: document.getElementById('e-start-date').value,
+    endDate: document.getElementById('e-end-date').value,
+    startTime: document.getElementById('e-start-time').value,
+    endTime: document.getElementById('e-end-time').value,
+    allow: {
+      students: document.getElementById('e-students').checked,
+      staff: document.getElementById('e-staff').checked,
+      visitors: document.getElementById('e-visitors').checked
+    }
+  };
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  cxLoadEventForm();
+
+  document.getElementById('save-btn').addEventListener('click', function(){
+    const ev = CxData.getEvent();
+    const data = cxCollectEventForm();
+    CxData.saveEvent({ ...ev, ...data });
+    cxToast('Event settings saved.', 'success');
+  });
+
+  document.getElementById('activate-btn').addEventListener('click', function(){
+    const data = cxCollectEventForm();
+    if(!data.name){ cxToast('Please name the event before activating.', 'error'); return; }
+    const ev = { ...data, active:true };
+    CxData.saveEvent(ev);
+    CxData.addAudit('Event mode activated', `${data.name} — event mode turned on.`);
+    cxRenderEventBanner(ev);
+    cxToast('Event mode activated.', 'success');
+  });
+
+  document.getElementById('deactivate-btn').addEventListener('click', function(){
+    const ev = CxData.getEvent();
+    const updated = { ...ev, active:false };
+    CxData.saveEvent(updated);
+    CxData.addAudit('Event mode deactivated', `${ev.name || 'Event'} — event mode turned off.`);
+    cxRenderEventBanner(updated);
+    cxToast('Event mode deactivated.', 'success');
+  });
+});
+</script>
+</body>
+</html>

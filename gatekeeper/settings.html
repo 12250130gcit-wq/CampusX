@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings · CampusX GCIT</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<link rel="stylesheet" href="css/style.css">
+<script src="../assets/auth.js"></script>
+<script src="../assets/store.js"></script>
+<script>var cxSession = CXAuth.requireRole("gatekeeper");</script>
+</head>
+<body data-depth="1">
+<script>window.CX_PAGE='settings'; window.CX_TITLE='System Settings';</script>
+
+<div class="app-shell">
+  <aside class="sidebar"><div id="sidebar-root"></div></aside>
+  <div id="backdrop-root"></div>
+
+  <div class="main-col">
+    <header class="topbar" id="topbar-root"></header>
+
+    <main class="page">
+      <div class="page-head"><div><h2>System Settings</h2><p class="desc">Gate configuration and system health for the Admin/Gatekeeper application.</p></div></div>
+
+      <div class="stat-grid" style="grid-template-columns:repeat(4,1fr); margin-bottom:22px;">
+        <div class="stat-card tone-green"><div class="label">System</div><div class="value" style="font-size:16px;"><span class="badge badge-online">Online</span></div></div>
+        <div class="stat-card tone-green"><div class="label">Database</div><div class="value" style="font-size:16px;"><span class="badge badge-connected">Connected</span></div></div>
+        <div class="stat-card tone-green"><div class="label">Scanner</div><div class="value" style="font-size:16px;"><span class="badge badge-connected">Connected</span></div></div>
+        <div class="stat-card tone-green"><div class="label">Face / ID Verification</div><div class="value" style="font-size:16px;"><span class="badge badge-online">Available</span></div></div>
+      </div>
+
+      <div class="grid-2" style="align-items:flex-start;">
+        <div class="section">
+          <div class="card card-pad">
+            <h3 style="font-size:14.5px; margin-bottom:14px;">Gate settings</h3>
+            <div class="field"><label>Assigned gate</label><select><option>Main Gate</option><option>Back Gate</option></select></div>
+            <div class="field mt-12"><label>Auto-lock after inactivity</label><select><option>5 minutes</option><option>10 minutes</option><option>Never</option></select></div>
+          </div>
+          <div class="card card-pad mt-16">
+            <h3 style="font-size:14.5px; margin-bottom:14px;">Verification settings</h3>
+            <label class="flex items-center gap-8 text-sm"><input type="checkbox" checked> Require photo match on scan</label>
+            <label class="flex items-center gap-8 text-sm mt-8"><input type="checkbox" checked> Block exit without approved leave</label>
+            <label class="flex items-center gap-8 text-sm mt-8"><input type="checkbox"> Allow face verification fallback</label>
+          </div>
+          <div class="card card-pad mt-16">
+            <h3 style="font-size:14.5px; margin-bottom:14px;">Visitor settings</h3>
+            <div class="field"><label>Default visit duration</label><select><option>1 hour</option><option>2 hours</option><option>Half day</option></select></div>
+            <label class="flex items-center gap-8 text-sm mt-12"><input type="checkbox" checked> Require CID for all visitors</label>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="card card-pad">
+            <h3 style="font-size:14.5px; margin-bottom:14px;">Notification settings</h3>
+            <label class="flex items-center gap-8 text-sm"><input type="checkbox" checked> Alert on overdue students</label>
+            <label class="flex items-center gap-8 text-sm mt-8"><input type="checkbox" checked> Alert on failed verification</label>
+            <label class="flex items-center gap-8 text-sm mt-8"><input type="checkbox" checked> Alert on visitor overstay</label>
+          </div>
+          <div class="card card-pad mt-16">
+            <h3 style="font-size:14.5px; margin-bottom:14px;">Event settings</h3>
+            <label class="flex items-center gap-8 text-sm"><input type="checkbox"> Enable relaxed rules automatically during active events</label>
+            <a href="event-mode.html" class="btn btn-outline btn-sm mt-12">Go to Event Mode</a>
+          </div>
+          <div class="card card-pad mt-16">
+            <h3 style="font-size:14.5px; margin-bottom:14px;">Security settings</h3>
+            <label class="flex items-center gap-8 text-sm"><input type="checkbox" checked> Require reason + confirmation for manual overrides</label>
+            <label class="flex items-center gap-8 text-sm mt-8"><input type="checkbox" checked> Log every gate action to audit trail</label>
+            <label class="flex items-center gap-8 text-sm mt-8"><input type="checkbox" disabled> Allow permanent deletion of security records (disabled by policy)</label>
+          </div>
+          <div class="card card-pad mt-16">
+            <h3 style="font-size:14.5px; margin-bottom:14px;">Admin permissions</h3>
+            <p class="text-sm text-muted">You are signed in as an <strong>Admin / Gatekeeper</strong>. Leave approvals belong to the SSO/Warden role and are not editable here.</p>
+          </div>
+          <button class="btn btn-dark btn-block mt-16" onclick="cxToast('Settings saved.', 'success')">Save Settings</button>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div id="toast-stack"></div>
+
+<script src="js/data.js"></script>
+<script src="js/main.js"></script>
+<script>
+// Lightweight local persistence for this settings page — every checkbox
+// and select is remembered so "Save Settings" actually sticks across visits.
+const CX_SETTINGS_KEY = 'cx_gate_local_settings';
+function cxCollectSettingsInputs(){
+  return Array.from(document.querySelectorAll('.page input, .page select'));
+}
+function cxLoadPageSettings(){
+  let saved = {};
+  try{ saved = JSON.parse(localStorage.getItem(CX_SETTINGS_KEY)) || {}; }catch(e){}
+  cxCollectSettingsInputs().forEach((el, i) => {
+    if(el.disabled) return;
+    const key = el.id || ('field-' + i);
+    if(!(key in saved)) return;
+    if(el.type === 'checkbox') el.checked = saved[key];
+    else el.value = saved[key];
+  });
+}
+function cxSavePageSettings(){
+  const data = {};
+  cxCollectSettingsInputs().forEach((el, i) => {
+    if(el.disabled) return;
+    const key = el.id || ('field-' + i);
+    data[key] = el.type === 'checkbox' ? el.checked : el.value;
+  });
+  localStorage.setItem(CX_SETTINGS_KEY, JSON.stringify(data));
+}
+document.addEventListener('DOMContentLoaded', function(){
+  cxCollectSettingsInputs().forEach((el, i) => { if(!el.id) el.id = 'field-' + i; });
+  cxLoadPageSettings();
+  document.querySelector('.btn.btn-dark.btn-block').addEventListener('click', function(){
+    cxSavePageSettings();
+    CxData.addAudit('Settings updated', 'Gate configuration and security preferences were updated.');
+  });
+});
+</script>
+</body>
+</html>

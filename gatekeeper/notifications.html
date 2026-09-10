@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notifications · CampusX GCIT</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<link rel="stylesheet" href="css/style.css">
+<script src="../assets/auth.js"></script>
+<script src="../assets/store.js"></script>
+<script>var cxSession = CXAuth.requireRole("gatekeeper");</script>
+</head>
+<body data-depth="1">
+<script>window.CX_PAGE='notifications'; window.CX_TITLE='Notifications & Alerts';</script>
+
+<div class="app-shell">
+  <aside class="sidebar"><div id="sidebar-root"></div></aside>
+  <div id="backdrop-root"></div>
+
+  <div class="main-col">
+    <header class="topbar" id="topbar-root"></header>
+
+    <main class="page">
+      <div class="page-head">
+        <div>
+          <h2>Notifications &amp; Alerts</h2>
+          <p class="desc">Security, movement, visitor and system alerts from across the gate system.</p>
+        </div>
+      </div>
+
+      <div class="search-row">
+        <button class="filter-chip active" data-filter="all">All</button>
+        <button class="filter-chip" data-filter="Security">Security</button>
+        <button class="filter-chip" data-filter="Movement">Movement</button>
+        <button class="filter-chip" data-filter="Visitor">Visitor</button>
+        <button class="filter-chip" data-filter="System">System</button>
+      </div>
+
+      <div class="card" id="notif-card">
+        <div id="notif-list"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/main.js"></script>
+<script>
+let cxNotifFilter = 'all';
+
+function cxLevelIcon(level){
+  if(level === 'alert') return 'x';
+  if(level === 'warning') return 'clock_alert';
+  if(level === 'success') return 'check';
+  return 'bell';
+}
+function cxLevelBadge(level){
+  if(level === 'alert') return 'badge-alert';
+  if(level === 'warning') return 'badge-warning';
+  if(level === 'success') return 'badge-approved';
+  return 'badge-neutral';
+}
+
+function cxCategoryForActivity(type){
+  if(type === 'leave' || type === 'leave-decision') return 'Movement';
+  if(type === 'visitor') return 'Visitor';
+  if(type === 'gate') return 'Security';
+  return 'System';
+}
+function cxLevelForActivity(type){
+  if(type === 'leave-decision') return 'success';
+  if(type === 'gate') return 'warning';
+  return 'info';
+}
+
+function cxRenderNotifications(){
+  const seeded = CxData.getNotifications();
+  const live = CXStore.getActivity(20).map(a => ({
+    category: cxCategoryForActivity(a.type),
+    level: cxLevelForActivity(a.type),
+    title: a.title,
+    detail: a.detail,
+    time: CXStore.timeAgo(a.time),
+    _live: true
+  }));
+  let list = [...live, ...seeded];
+  if(cxNotifFilter !== 'all') list = list.filter(n => n.category === cxNotifFilter);
+
+  const listEl = document.getElementById('notif-list');
+  listEl.innerHTML = list.length === 0
+    ? `<div class="empty-state"><div class="t">No notifications</div></div>`
+    : list.map(n => `
+      <div class="movement-row">
+        <div class="person-avatar" style="background:${n.level==='alert'?'var(--red-light)':n.level==='warning'?'var(--orange-light)':n.level==='success'?'var(--green-light)':'#F0F0F0'}; color:${n.level==='alert'?'var(--red)':n.level==='warning'?'var(--orange-dark)':n.level==='success'?'#0F5F3B':'var(--gray-dark)'};">
+          <span data-icon="${cxLevelIcon(n.level)}" style="width:17px;height:17px;"></span>
+        </div>
+        <div class="movement-info">
+          <div class="name">${n.title}</div>
+          <div class="meta">${n.detail}</div>
+        </div>
+        <div class="movement-time"><span class="t">${n.time}</span>${n.category}</div>
+        <span class="badge ${cxLevelBadge(n.level)}">${n.category}</span>
+      </div>`).join('');
+  cxFillIcons();
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  cxRenderNotifications();
+  document.querySelectorAll('.filter-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      cxNotifFilter = chip.dataset.filter;
+      cxRenderNotifications();
+    });
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leave Lookup · CampusX GCIT</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<link rel="stylesheet" href="css/style.css">
+<script src="../assets/auth.js"></script>
+<script src="../assets/store.js"></script>
+<script>var cxSession = CXAuth.requireRole("gatekeeper");</script>
+</head>
+<body data-depth="1">
+<script>window.CX_PAGE='leave-lookup'; window.CX_TITLE='Leave / Permission Lookup';</script>
+
+<div class="app-shell">
+  <aside class="sidebar"><div id="sidebar-root"></div></aside>
+  <div id="backdrop-root"></div>
+
+  <div class="main-col">
+    <header class="topbar" id="topbar-root"></header>
+
+    <main class="page">
+      <div class="page-head">
+        <div>
+          <h2>Leave / Permission Lookup</h2>
+          <p class="desc">Look up the leave permission an SSO or Warden has already approved. Gatekeepers verify — they don't approve leave.</p>
+        </div>
+      </div>
+
+      <div class="card card-pad">
+        <div class="search-row" style="margin-bottom:0;">
+          <div class="search-box">
+            <span data-icon="search"></span>
+            <input type="text" id="search-input" placeholder="Search by student name or student ID…">
+          </div>
+          <button class="btn btn-dark" id="search-btn">Look Up</button>
+        </div>
+      </div>
+
+      <div class="section mt-16" id="results"></div>
+    </main>
+  </div>
+</div>
+
+<div id="toast-stack"></div>
+
+<script src="js/data.js"></script>
+<script src="js/main.js"></script>
+<script>
+function cxLeaveLabel(status){
+  const map = {
+    approved: 'APPROVED', pending: 'PENDING', rejected: 'REJECTED', rejected_recent: 'REJECTED',
+    expired: 'EXPIRED', none: 'NO ACTIVE PERMISSION'
+  };
+  return map[status] || status.toUpperCase();
+}
+
+function cxLeaveTone(status){
+  if(status === 'approved') return 'ok';
+  if(status === 'pending') return 'warn';
+  return 'no';
+}
+
+function cxLiveMatches(q){
+  return CXStore.getAllLeaves().filter(l => l.studentId.toLowerCase().includes(q) || l.studentName.toLowerCase().includes(q));
+}
+
+function cxLiveLeaveCard(l){
+  const tone = l.status === 'approved' ? 'ok' : l.status === 'pending' ? 'warn' : 'no';
+  return `
+  <div class="card card-pad mt-12">
+    <div class="flex justify-between items-center">
+      <div class="flex items-center gap-12">
+        <div class="person-avatar">${cxInitials(l.studentName)}</div>
+        <div><div style="font-weight:800; font-size:14.5px;">${l.studentName}</div><div class="text-muted text-sm">#${l.studentId} · Submitted via Student App</div></div>
+      </div>
+      <span class="badge ${tone === 'ok' ? 'badge-approved' : tone === 'warn' ? 'badge-pending' : 'badge-rejected'}">${l.status.toUpperCase()}</span>
+    </div>
+    <div class="kv-grid">
+      <div class="kv"><div class="k">Destination</div><div class="v">${l.destination}</div></div>
+      <div class="kv"><div class="k">Reason</div><div class="v">${l.reason}</div></div>
+      <div class="kv"><div class="k">Exit</div><div class="v mono">${l.exitTime || '—'}</div></div>
+      <div class="kv"><div class="k">Expected Return</div><div class="v mono">${l.returnTime || '—'}</div></div>
+    </div>
+    <div class="verdict-banner ${tone === 'ok' ? 'ok' : 'no'} mt-16">
+      <div class="icon"><span data-icon="${tone === 'ok' ? 'check' : 'x'}"></span></div>
+      <div>
+        <div class="title">${tone === 'ok' ? 'Permission valid for gate exit' : tone === 'warn' ? 'Awaiting SSO / warden decision' : 'No valid permission for exit'}</div>
+        <div class="sub">Submitted straight from the Student portal — always up to date.</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function cxLookupLeave(){
+  const q = document.getElementById('search-input').value.trim().toLowerCase();
+  const resultsEl = document.getElementById('results');
+  if(!q){ resultsEl.innerHTML = ''; return; }
+
+  const liveMatches = cxLiveMatches(q);
+  const liveHtml = liveMatches.map(cxLiveLeaveCard).join('');
+
+  const matches = CxData.getStudents().filter(s => s.id.toLowerCase().includes(q) || s.name.toLowerCase().includes(q));
+  if(matches.length === 0 && liveMatches.length === 0){
+    resultsEl.innerHTML = `<div class="card empty-state"><div class="t">No leave record found</div><div class="d">Check the student ID or name and try again.</div></div>`;
+    return;
+  }
+
+  resultsEl.innerHTML = liveHtml + matches.map(s => {
+    const tone = cxLeaveTone(s.leave);
+    const bannerClass = tone === 'no' ? 'no' : 'ok';
+    return `
+    <div class="card card-pad mt-12">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center gap-12">
+          <div class="person-avatar">${s.initials}</div>
+          <div><div style="font-weight:800; font-size:14.5px;">${s.name}</div><div class="text-muted text-sm">#${s.id} · ${s.program}</div></div>
+        </div>
+        <span class="badge ${tone === 'ok' ? 'badge-approved' : tone === 'warn' ? 'badge-pending' : 'badge-rejected'}">${cxLeaveLabel(s.leave)}</span>
+      </div>
+      <div class="kv-grid">
+        <div class="kv"><div class="k">Destination</div><div class="v">${s.destination}</div></div>
+        <div class="kv"><div class="k">Approved By</div><div class="v">${s.approvedBy}</div></div>
+        <div class="kv"><div class="k">Exit Window</div><div class="v mono">${s.exitTime}</div></div>
+        <div class="kv"><div class="k">Expected Return</div><div class="v mono">${s.expectedReturn}</div></div>
+      </div>
+      <div class="verdict-banner ${bannerClass === 'ok' ? 'ok' : 'no'} mt-16">
+        <div class="icon"><span data-icon="${tone === 'ok' ? 'check' : 'x'}"></span></div>
+        <div>
+          <div class="title">${tone === 'ok' ? 'Permission valid for gate exit' : tone === 'warn' ? 'Awaiting Warden / SSO decision' : 'No valid permission for exit'}</div>
+          <div class="sub">Recorded lookup will appear in the security audit trail.</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  CxData.addAudit('Leave lookup', `Leave record checked for query "${q}".`);
+  cxFillIcons();
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  document.getElementById('search-btn').addEventListener('click', cxLookupLeave);
+  document.getElementById('search-input').addEventListener('keydown', e => { if(e.key === 'Enter') cxLookupLeave(); });
+  cxFillIcons();
+});
+</script>
+</body>
+</html>

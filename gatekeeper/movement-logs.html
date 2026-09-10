@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Entry &amp; Exit Logs · CampusX GCIT</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<link rel="stylesheet" href="css/style.css">
+<script src="../assets/auth.js"></script>
+<script src="../assets/store.js"></script>
+<script>var cxSession = CXAuth.requireRole("gatekeeper");</script>
+</head>
+<body data-depth="1">
+<script>window.CX_PAGE='logs'; window.CX_TITLE='Entry & Exit Logs';</script>
+
+<div class="app-shell">
+  <aside class="sidebar"><div id="sidebar-root"></div></aside>
+  <div id="backdrop-root"></div>
+
+  <div class="main-col">
+    <header class="topbar" id="topbar-root"></header>
+
+    <main class="page">
+      <div class="page-head">
+        <div>
+          <h2>Entry &amp; Exit Logs</h2>
+          <p class="desc">Complete movement history for Main Gate — students and visitors.</p>
+        </div>
+        <button class="btn btn-outline" onclick="cxExportLogs()"><span data-icon="bar_chart"></span>Export CSV</button>
+      </div>
+
+      <div class="search-row">
+        <div class="search-box">
+          <span data-icon="search"></span>
+          <input type="text" id="search-input" placeholder="Search by name or ID…">
+        </div>
+        <button class="filter-chip active" data-filter="all">All</button>
+        <button class="filter-chip" data-filter="Student">Students</button>
+        <button class="filter-chip" data-filter="Visitor">Visitors</button>
+        <button class="filter-chip" data-filter="EXIT">Exits</button>
+        <button class="filter-chip" data-filter="ENTRY">Entries</button>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Today</h3>
+          <span class="hint" id="logs-count">—</span>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Time</th><th>Person</th><th>ID</th><th>Type</th><th>Action</th><th>Gate</th><th>Method</th><th>Admin</th><th>Status</th></tr></thead>
+            <tbody id="logs-tbody"></tbody>
+          </table>
+        </div>
+        <div class="record-cards" id="logs-cards" style="padding:14px;"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div id="toast-stack"></div>
+
+<script src="js/data.js"></script>
+<script src="js/main.js"></script>
+<script>
+let cxLogFilter = 'all';
+
+function cxActionBadge(action){
+  if(action === 'EXIT') return '<span class="badge badge-outside">Exit</span>';
+  if(action === 'ENTRY') return '<span class="badge badge-approved">Entry</span>';
+  if(action === 'CHECK-IN') return '<span class="badge badge-neutral">Check-in</span>';
+  if(action === 'CHECK-OUT') return '<span class="badge badge-neutral">Check-out</span>';
+  return `<span class="badge badge-neutral">${action}</span>`;
+}
+
+function cxRenderLogs(){
+  const q = document.getElementById('search-input').value.trim().toLowerCase();
+  let list = CxData.getLogs();
+  if(cxLogFilter !== 'all') list = list.filter(l => l.type === cxLogFilter || l.action === cxLogFilter);
+  if(q) list = list.filter(l => l.name.toLowerCase().includes(q) || String(l.id).toLowerCase().includes(q));
+
+  document.getElementById('logs-count').textContent = `${list.length} events`;
+
+  document.getElementById('logs-tbody').innerHTML = list.map(l => `
+    <tr>
+      <td class="mono">${l.time}</td>
+      <td><strong>${l.name}</strong></td>
+      <td class="mono">${l.id}</td>
+      <td>${l.type}</td>
+      <td>${cxActionBadge(l.action)}</td>
+      <td>${l.gate}</td>
+      <td>${l.method}</td>
+      <td>${l.admin}</td>
+      <td>${l.status}</td>
+    </tr>`).join('') || `<tr><td colspan="9"><div class="empty-state"><div class="t">No matching events</div></div></td></tr>`;
+
+  document.getElementById('logs-cards').innerHTML = list.map(l => `
+    <div class="record-card">
+      <div class="rc-top"><div><div class="rc-name">${l.name}</div><div class="rc-id mono">#${l.id}</div></div>${cxActionBadge(l.action)}</div>
+      <div class="rc-body">
+        <div class="rc-field"><div class="k">Time</div><div class="v mono">${l.time}</div></div>
+        <div class="rc-field"><div class="k">Type</div><div class="v">${l.type}</div></div>
+        <div class="rc-field"><div class="k">Gate</div><div class="v">${l.gate}</div></div>
+        <div class="rc-field"><div class="k">Method</div><div class="v">${l.method}</div></div>
+      </div>
+    </div>`).join('') || '';
+
+  cxFillIcons();
+}
+
+function cxExportLogs(){
+  const list = CxData.getLogs();
+  const header = ['Time','Name','ID','Type','Action','Gate','Method','Admin','Status'];
+  const rows = list.map(l => [l.time,l.name,l.id,l.type,l.action,l.gate,l.method,l.admin,l.status]);
+  const csv = [header, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type:'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'campusx-entry-exit-log.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  CxData.addAudit('Report exported', 'Entry/exit log exported to CSV.');
+  cxToast('Log exported as CSV.', 'success');
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  cxRenderLogs();
+  document.getElementById('search-input').addEventListener('input', cxRenderLogs);
+  document.querySelectorAll('.filter-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      cxLogFilter = chip.dataset.filter;
+      cxRenderLogs();
+    });
+  });
+});
+</script>
+</body>
+</html>

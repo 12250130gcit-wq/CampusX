@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Directory · CampusX GCIT</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<link rel="stylesheet" href="css/style.css">
+<script src="../assets/auth.js"></script>
+<script src="../assets/store.js"></script>
+<script>var cxSession = CXAuth.requireRole("gatekeeper");</script>
+</head>
+<body data-depth="1">
+<script>window.CX_PAGE='students'; window.CX_TITLE='Student Directory';</script>
+
+<div class="app-shell">
+  <aside class="sidebar"><div id="sidebar-root"></div></aside>
+  <div id="backdrop-root"></div>
+
+  <div class="main-col">
+    <header class="topbar" id="topbar-root"></header>
+
+    <main class="page">
+      <div class="page-head">
+        <div>
+          <h2>Student Directory</h2>
+          <p class="desc">Search every enrolled student and check their current campus status.</p>
+        </div>
+      </div>
+
+      <div class="search-row">
+        <div class="search-box">
+          <span data-icon="search"></span>
+          <input type="text" id="search-input" placeholder="Search by name, ID, program or hostel…">
+        </div>
+      </div>
+
+      <div id="directory-grid" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(270px,1fr)); gap:14px;"></div>
+
+      <div id="profile-panel" class="hidden mt-16"></div>
+    </main>
+  </div>
+</div>
+
+<div id="toast-stack"></div>
+
+<script src="js/data.js"></script>
+<script src="js/main.js"></script>
+<script>
+function cxCurrentStatusLabel(s){
+  if(s.status === 'overdue') return { cls:'badge-overdue', label:'Overdue' };
+  if(s.status === 'outside') return { cls:'badge-outside', label:'Outside Campus' };
+  if(s.leave === 'pending') return { cls:'badge-pending', label:'On Leave (Pending)' };
+  return { cls:'badge-inside', label:'Inside Campus' };
+}
+
+function cxRenderDirectory(){
+  const q = document.getElementById('search-input').value.trim().toLowerCase();
+  let list = CxData.getStudents();
+  if(q) list = list.filter(s => [s.name,s.id,s.program,s.hostel].join(' ').toLowerCase().includes(q));
+
+  document.getElementById('directory-grid').innerHTML = list.map(s => {
+    const status = cxCurrentStatusLabel(s);
+    return `
+    <div class="card card-pad" style="cursor:pointer;" onclick="cxShowProfile('${s.id}')">
+      <div class="flex items-center gap-12">
+        <div class="person-avatar">${s.initials}</div>
+        <div style="flex:1; min-width:0;">
+          <div style="font-weight:800; font-size:13.5px;">${s.name}</div>
+          <div class="text-muted text-sm mono">#${s.id}</div>
+        </div>
+      </div>
+      <div class="text-sm text-muted mt-8">${s.program} · ${s.hostel}, Rm ${s.room}</div>
+      <span class="badge ${status.cls}" style="margin-top:10px;">${status.label}</span>
+    </div>`;
+  }).join('') || `<div class="card empty-state"><div class="t">No students found</div></div>`;
+}
+
+function cxShowProfile(id){
+  const s = CxData.getStudents().find(x => x.id === id);
+  if(!s) return;
+  const logs = CxData.getLogs().filter(l => l.id === id);
+  const panel = document.getElementById('profile-panel');
+  panel.classList.remove('hidden');
+  const status = cxCurrentStatusLabel(s);
+  panel.innerHTML = `
+    <div class="card card-pad">
+      <div class="flex justify-between items-start">
+        <div class="flex items-center gap-12">
+          <div class="person-avatar" style="width:52px;height:52px;font-size:16px;">${s.initials}</div>
+          <div>
+            <div style="font-weight:800; font-size:16px;">${s.name}</div>
+            <div class="text-muted text-sm">#${s.id} · ${s.program} · ${s.hostel}, Room ${s.room}</div>
+          </div>
+        </div>
+        <span class="badge ${status.cls}">${status.label}</span>
+      </div>
+      <div class="kv-grid" style="margin-top:16px;">
+        <div class="kv"><div class="k">Contact</div><div class="v mono">${s.contact}</div></div>
+        <div class="kv"><div class="k">Leave Status</div><div class="v">${s.leave}</div></div>
+        <div class="kv"><div class="k">Destination</div><div class="v">${s.destination}</div></div>
+        <div class="kv"><div class="k">Approved By</div><div class="v">${s.approvedBy}</div></div>
+      </div>
+      <div class="section-title-row mt-16"><h3>Movement history</h3></div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Time</th><th>Action</th><th>Gate</th><th>Method</th><th>Status</th></tr></thead>
+          <tbody>
+            ${logs.map(l => `<tr><td class="mono">${l.time}</td><td>${l.action}</td><td>${l.gate}</td><td>${l.method}</td><td>${l.status}</td></tr>`).join('') || '<tr><td colspan="5"><div class="empty-state"><div class="t">No recorded movement</div></div></td></tr>'}
+          </tbody>
+        </table>
+      </div>
+      <div class="flex gap-8 mt-16">
+        <button class="btn btn-outline btn-sm" onclick="location.href='verification.html'">Open in Verify</button>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('profile-panel').classList.add('hidden')">Close</button>
+      </div>
+    </div>`;
+  panel.scrollIntoView({ behavior:'smooth' });
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  cxRenderDirectory();
+  document.getElementById('search-input').addEventListener('input', cxRenderDirectory);
+  const params = new URLSearchParams(location.search);
+  const id = params.get('id');
+  if(id) cxShowProfile(id);
+});
+</script>
+</body>
+</html>

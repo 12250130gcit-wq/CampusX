@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verify Student · CampusX GCIT</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<link rel="stylesheet" href="css/style.css">
+<script src="../assets/auth.js"></script>
+<script src="../assets/store.js"></script>
+<script>var cxSession = CXAuth.requireRole("gatekeeper");</script>
+</head>
+<body data-depth="1">
+<script>window.CX_PAGE='verify'; window.CX_TITLE='Verify Student';</script>
+
+<div class="app-shell">
+  <aside class="sidebar"><div id="sidebar-root"></div></aside>
+  <div id="backdrop-root"></div>
+
+  <div class="main-col">
+    <header class="topbar" id="topbar-root"></header>
+
+    <main class="page">
+      <div class="page-head">
+        <div>
+          <h2>Verify Student</h2>
+          <p class="desc">Scan an ID/QR or search manually to check a student's leave status before allowing exit or return.</p>
+        </div>
+      </div>
+
+      <div class="grid-2" style="align-items:flex-start;">
+        <div class="section">
+          <div class="card card-pad">
+            <div class="flex gap-8" style="margin-bottom:16px;">
+              <button class="btn btn-primary" id="tab-scan-btn">Scan ID / QR</button>
+              <button class="btn btn-outline" id="tab-search-btn">Search Manually</button>
+            </div>
+
+            <div id="scan-panel">
+              <div class="scanner-frame" id="scanner-frame">
+                <div class="scanner-target">
+                  <div class="scan-line"></div>
+                  <span data-icon="qr" style="width:44px;height:44px;color:inherit;"></span>
+                </div>
+                <div>
+                  <p style="font-weight:700; font-size:13.5px;" id="scanner-status">Scanning ready</p>
+                  <p class="text-sm text-muted mt-8">Position the student ID card or QR pass inside the frame</p>
+                </div>
+                <button class="btn btn-primary" id="scan-trigger-btn">
+                  <span data-icon="scan"></span>Start Scan
+                </button>
+              </div>
+              <p class="text-sm text-muted mt-12">No scanner attached? Try a demo ID: <code class="mono">12250001</code> (approved), <code class="mono">12250018</code> (overdue &amp; approved), <code class="mono">12250044</code> (no active leave), <code class="mono">12250091</code> (rejected).</p>
+            </div>
+
+            <div id="search-panel" class="hidden">
+              <div class="search-box">
+                <span data-icon="search"></span>
+                <input type="text" id="search-input" placeholder="Search by name or student ID…">
+              </div>
+              <button class="btn btn-dark btn-block mt-12" id="search-trigger-btn">Find Student</button>
+              <div id="search-results" class="mt-12"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="card card-pad verify-result" id="verify-result">
+            <div class="student-id-card">
+              <div class="photo" id="res-initials">–</div>
+              <div>
+                <div class="name" id="res-name">—</div>
+                <div class="meta" id="res-meta">—</div>
+              </div>
+            </div>
+
+            <div class="kv-grid">
+              <div class="kv"><div class="k">Hostel / Room</div><div class="v" id="res-room">—</div></div>
+              <div class="kv"><div class="k">Contact</div><div class="v mono" id="res-contact">—</div></div>
+              <div class="kv"><div class="k">Destination</div><div class="v" id="res-dest">—</div></div>
+              <div class="kv"><div class="k">Approved By</div><div class="v" id="res-approver">—</div></div>
+              <div class="kv"><div class="k">Exit Time</div><div class="v mono" id="res-exit">—</div></div>
+              <div class="kv"><div class="k">Expected Return</div><div class="v mono" id="res-return">—</div></div>
+            </div>
+
+            <div class="verdict-banner" id="verdict-banner">
+              <div class="icon" id="verdict-icon"></div>
+              <div>
+                <div class="title" id="verdict-title">—</div>
+                <div class="sub" id="verdict-sub">—</div>
+              </div>
+            </div>
+
+            <div class="check-list" id="check-list"></div>
+
+            <div class="flex gap-8 mt-16" id="verify-actions"></div>
+          </div>
+
+          <div class="card empty-state" id="verify-empty">
+            <span data-icon="id_card" style="width:34px;height:34px; display:inline-flex; margin-bottom:8px; opacity:.4;"></span>
+            <div class="t">No student selected</div>
+            <div class="d">Scan an ID or search to see leave status and gate actions here.</div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Manual override modal -->
+<div class="modal-overlay" id="override-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Manual Override</h3>
+      <button class="modal-close" onclick="cxCloseModal('override-modal')"><span data-icon="x"></span></button>
+    </div>
+    <div class="modal-body">
+      <p class="text-sm text-muted">Manual override lets this student exit without a standing approval. This is logged to the security audit trail and cannot be undone silently.</p>
+      <div class="field mt-16">
+        <label for="override-reason">Reason for override <span style="color:var(--red);">*</span></label>
+        <textarea id="override-reason" rows="3" placeholder="e.g. Warden verbally approved by phone, leave slip pending upload…"></textarea>
+      </div>
+      <div class="field mt-12">
+        <label><input type="checkbox" id="override-confirm"> I confirm this override and accept responsibility for this audit entry.</label>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="cxCloseModal('override-modal')">Cancel</button>
+      <button class="btn btn-danger" id="override-submit-btn">Confirm Override</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-stack"></div>
+
+<script src="js/data.js"></script>
+<script src="js/main.js"></script>
+<script src="js/verification.js"></script>
+</body>
+</html>
