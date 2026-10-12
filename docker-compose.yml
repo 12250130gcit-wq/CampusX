@@ -1,0 +1,29 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: campusx-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: campusx
+      POSTGRES_USER: campusx
+      POSTGRES_PASSWORD: campusx
+    ports:
+      - "5432:5432"
+    volumes:
+      - campusx-postgres-data:/var/lib/postgresql/data
+
+  api:
+    build: ./backend
+    container_name: campusx-api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://campusx:campusx@postgres:5432/campusx?sslmode=disable
+      PORT: 8080
+      FRONTEND_ORIGIN: http://localhost:8000
+    depends_on:
+      - postgres
+    ports:
+      - "8080:8080"
+
+volumes:
+  campusx-postgres-data:

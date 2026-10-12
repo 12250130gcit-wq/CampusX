@@ -1,0 +1,257 @@
+.form-grid,
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+.filter-row {
+  display: flex;
+  align-items: end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.field {
+  margin-bottom: 16px;
+}
+.field label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+.field input:not([type="checkbox"]),
+.field select,
+.field textarea {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid #ddd;
+  border-radius: 9px;
+  font: inherit;
+  background: white;
+  color: #182821;
+}
+.field textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0;
+}
+.card-pad {
+  padding: 22px;
+}
+.mt-12 {
+  margin-top: 12px;
+}
+.mt-16 {
+  margin-top: 16px;
+}
+.action-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.react-result {
+  width: 100%;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 9px;
+  text-align: left;
+  gap: 12px;
+  padding: 14px;
+  margin-top: 8px;
+  cursor: pointer;
+}
+.react-chart {
+  display: flex;
+  align-items: end;
+  gap: 22px;
+  min-height: 190px;
+  padding: 16px;
+}
+.react-chart > div {
+  flex: 1;
+  text-align: center;
+}
+.react-bar {
+  background: #76b543;
+  border-radius: 5px 5px 0 0;
+  margin: 6px 0;
+}
+.sidebar-brand {
+  display: flex;
+  gap: 12px;
+  padding: 24px;
+  align-items: center;
+}
+.sidebar-brand small {
+  display: block;
+}
+.nav-link {
+  display: flex;
+  padding: 10px 18px;
+  color: inherit;
+  text-decoration: none;
+  border-radius: 8px;
+  margin: 2px 12px;
+}
+.nav-link.active {
+  background: #eef6e8;
+  color: #314c1c;
+  font-weight: 700;
+}
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: auto;
+}
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin: 20px 0;
+}
+.stat-card {
+  background: white;
+  border: 1px solid #e7e2d8;
+  border-radius: 14px;
+  padding: 20px;
+}
+.stat-card .value {
+  font-size: 28px;
+  font-weight: 800;
+  margin-top: 8px;
+}
+.modal-backdrop.open {
+  display: flex;
+  position: fixed;
+  inset: 0;
+  align-items: center;
+  justify-content: center;
+  background: #18282180;
+  z-index: 1000;
+  padding: 20px;
+}
+.modal-backdrop .modal {
+  display: block;
+  background: white;
+  border-radius: 16px;
+  max-width: 620px;
+  width: 100%;
+  max-height: 90vh;
+  overflow: auto;
+  transform: none;
+  opacity: 1;
+}
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  border-bottom: 1px solid #ddd;
+}
+.modal-body {
+  padding: 20px;
+}
+.toast {
+  display: none;
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 14px 22px;
+  background: #314c1c;
+  color: white;
+  z-index: 2000;
+  border-radius: 10px;
+}
+.toast.show {
+  display: block;
+  opacity: 1;
+}
+.form-error {
+  color: #b42318;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+.camera-video {
+  width: 100%;
+  max-height: 320px;
+  object-fit: cover;
+  background: #111;
+}
+.app .screens {
+  padding: 18px;
+}
+.app .greeting {
+  padding: 18px;
+}
+.app .screen[hidden] {
+  display: none;
+}
+.app .bottom-nav {
+  display: flex;
+  position: sticky;
+  bottom: 0;
+  background: white;
+  justify-content: space-around;
+  padding: 12px;
+  border-top: 1px solid #ddd;
+}
+.app .bottom-nav button {
+  border: 0;
+  background: transparent;
+  padding: 10px;
+  color: #314c1c;
+}
+.app .bottom-nav button.active {
+  background: #eef6e8;
+  border-radius: 8px;
+}
+.app .ticket {
+  padding: 14px;
+  border: 1px solid #e7e2d8;
+  border-radius: 12px;
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+.app .btn {
+  margin-top: 8px;
+}
+@media (max-width: 800px) {
+  .form-grid,
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+  .stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .topbar-right > span {
+    display: none;
+  }
+  .react-chart {
+    gap: 8px;
+  }
+}
+@media print {
+  .sidebar,
+  .topbar,
+  button,
+  .toast {
+    display: none !important;
+  }
+  .main-col {
+    margin-left: 0 !important;
+  }
+}

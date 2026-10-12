@@ -1,48 +1,73 @@
-# CampusX · GCIT — Unified Portal
+# CampusX · GCIT Unified Portal
 
-A front-end portal prototype that presents one shared login screen for three distinct account types: Student, SSO Admin, and Gatekeeper.
+CampusX is a React + Vite front-end prototype for GCIT campus movement management. It provides one shared login and registration screen for three account types: Student, SSO Admin, and Gatekeeper.
 
 ## Run locally
 
-1. Open [index.html](index.html) directly in a browser, or
-2. Serve the folder from the project root:
+Start PostgreSQL and the Go API with Docker Desktop running:
 
 ```bash
-python -m http.server 8000
+docker compose up --build
 ```
 
-Then visit:
+Install Node.js 22.12+ (Node.js 24 recommended). In a second terminal, start the React frontend from the project root:
+
+```bash
+npm install
+npm run dev
+```
+
+Open the portal at:
 
 ```text
-http://localhost:8000/
+http://localhost:5173/
 ```
+
+The API runs at `http://localhost:8080` and creates the PostgreSQL tables automatically on startup. The supplied GCIT student roster is imported during startup. The browser uses this API for leave history, new applications, decisions, student lookup, and gate movement history; localStorage remains an offline fallback when the API is unavailable.
 
 ## Project structure
 
 ```text
 CampusX/
-├── index.html                 → Unified login and registration screen
-├── README.md                  → Project overview and quick start
-├── assets/
-│   ├── auth.js                → Shared session/auth logic
-│   ├── store.js               → Shared localStorage data layer
-│   ├── theme.css              → Shared brand/theme tokens
-│   └── gcit-logo.png          → GCIT logo asset
-├── student/
-│   └── index.html             → Student portal
-├── sso/
-│   ├── index.html             → SSO Admin console
-│   └── admin.css              → Admin styling
-│   └── admin.js               → Admin logic
-└── gatekeeper/
-    ├── css/
-    │   ├── style.css          → Gatekeeper app styling
-    │   └── js/
-    │       ├── main.js        → Gatekeeper shell/navigation
-    │       ├── data.js        → Demo data + persistence
-    │       ├── verification.js
-    │       └── dashboard.js
+  src/
+    App.jsx          React routes, role guards, and portal styles
+    main.jsx         Single React entry point
+    pages/           All 18 screens as React JSX components
+    components/      Shared React layouts, forms, tables, dialogs, camera
+    hooks/           Reactive data subscriptions
+    services/        JavaScript authentication, storage, API, and roster utilities
+    styles/          Shared and portal-specific CSS
+  assets/            Theme and logo
+  public/assets/     Static production assets
+  backend/           Go API and PostgreSQL schema
+  tests/             Playwright browser checks
+  index.html         The single HTML bootstrap required by Vite
+  vite.config.js     React build and API proxy
+  docker-compose.yml PostgreSQL and API services
 ```
+
+Every screen is implemented in JSX with React state, props, effects, and event handlers. Tables, dialogs, search results, navigation, and forms are rendered by React. The previous DOM controllers and separate HTML page files have been removed.
+
+The app retains original URLs such as `/student/index.html`, `/sso/index.html`, and `/gatekeeper/verification.html` for compatibility; these are now client-side routes, not HTML files. Navigation uses browser history without reloading the document. The Go backend and shared JavaScript data utilities remain separate from the React UI.
+
+## Build and test
+
+```bash
+npm run build
+npm run preview
+```
+
+The deployable output is `dist/`. Vite development and preview servers run on port 5173 and proxy `/api` to `http://localhost:8080`. For deployment, configure the host to serve `index.html` for frontend routes and proxy `/api` to the Go API, or set `VITE_API_URL` before building (and configure the API's allowed frontend origin if using another origin).
+
+```bash
+npx playwright install chromium
+npm test
+npm run test:production
+```
+
+Browser checks cover every protected page, login/logout, registration, unauthorized redirects, React navigation and browser Back, visitor registration/checkout, event settings, gate exit/return persistence, and the student-to-SSO-to-gatekeeper leave workflow. They use the localStorage fallback, so PostgreSQL is not required for these checks. Hardware camera behavior and live database integration require separate checks with those services available.
+
+On PowerShell installations that block `npm.ps1`, use `npm.cmd` and `npx.cmd` for these commands.
 
 ## Demo accounts
 
@@ -52,15 +77,18 @@ CampusX/
 | SSO Admin | ADM-SSO-001 | sso@admin123 |
 | Gatekeeper | GK-001 | gate@2024 |
 
-You can also register a new account from the main login screen. Those accounts are stored in the browser's localStorage so they remain available while using the same browser session.
+Student accounts must use the college format ending in `gcit@rub.edu.bt`, for example `12250129gcit@rub.edu.bt`. The portal rejects student registration and login for any other email format.
+
+You can also register a new account from the main login screen. Leave applications are written to PostgreSQL through the Go API and appear in SSO leave management and Gatekeeper leave lookup. The browser keeps a local cache as an offline fallback.
 
 ## How the system works
 
 - Each role has its own login flow and protected dashboard.
-- The shared auth system checks the active session before allowing access to the app pages.
-- The same browser storage is reused across the student, SSO, and gatekeeper experiences so demo data remains connected.
+- The shared auth system checks the active session and role before allowing access to app pages.
+- PostgreSQL is the shared source of truth when the Go API is running; the browser cache keeps the UI usable while offline.
+- Gatekeepers can scan a card/QR, search the roster, open a camera preview for manual identity comparison, record an exit, and record a return with an optional note.
 - Logout clears the session and sends the user back to the root login screen.
 
 ## Notes
 
-This is a front-end prototype. It does not connect to a real backend or authentication service. All account and app data live in localStorage for demo and prototype purposes.
+This is a local prototype. The Go API and PostgreSQL database provide persistence, but authentication is still front-end-only and passwords are stored in browser localStorage. Add real identity management, authorization, HTTPS, and secret management before production use.

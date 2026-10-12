@@ -1,0 +1,40 @@
+{
+  "name": "campusx",
+  "version": "1.0.0",
+  "description": "CampusX is a front-end prototype for GCIT campus movement management. It provides one shared login and registration screen for three account types: Student, SSO Admin, and Gatekeeper.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "playwright test",
+    "format": "prettier --write src tests *.js index.html",
+    "test:production": "npm run build && playwright test --config playwright.production.config.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/12250130gcit-wq/CampusX.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/12250130gcit-wq/CampusX/issues"
+  },
+  "homepage": "https://github.com/12250130gcit-wq/CampusX#readme",
+  "dependencies": {
+    "jsqr": "^1.4.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "prettier": "^3.9.6",
+    "vite": "^8.2.2"
+  },
+  "private": true,
+  "engines": {
+    "node": "^22.12.0 || >=24.0.0"
+  }
+}
